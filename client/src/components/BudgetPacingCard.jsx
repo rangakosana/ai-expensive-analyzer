@@ -1,0 +1,260 @@
+import React, { useMemo } from 'react';
+import {
+  ShieldCheck,
+  Lock,
+  IndianRupee,
+  Clock,
+  Settings,
+  AlertTriangle,
+  CheckCircle2,
+  TrendingUp,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react';
+
+export const BudgetPacingCard = ({
+  budget,
+  expenses = [],
+  selectedMonth,
+  onOpenBudgetModal,
+}) => {
+  const [yearNum, monthNum] = useMemo(() => {
+    const parts = (selectedMonth || '').split('-').map(Number);
+    const now = new Date();
+    return [parts[0] || now.getFullYear(), parts[1] || now.getMonth() + 1];
+  }, [selectedMonth]);
+
+  const daysInMonth = useMemo(() => {
+    return new Date(yearNum, monthNum, 0).getDate();
+  }, [yearNum, monthNum]);
+
+  const now = new Date();
+  const isCurrentMonth = now.getFullYear() === yearNum && now.getMonth() + 1 === monthNum;
+  const currentDay = isCurrentMonth ? Math.min(now.getDate(), daysInMonth) : daysInMonth;
+  const daysRemaining = Math.max(0, daysInMonth - currentDay);
+
+  // Budget numbers
+  const monthlyIncome = Number(budget?.monthly_income || 3000);
+  const savingsPercent = Number(budget?.savings_target_percentage ?? 20);
+  const savingsTargetAmount = Math.round(monthlyIncome * (savingsPercent / 100));
+
+  const fixedBills = Array.isArray(budget?.fixed_bills) ? budget.fixed_bills : [];
+  const fixedBillsTotal = fixedBills.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+
+  const flexibleBudgetTotal = Math.max(0, monthlyIncome - savingsTargetAmount - fixedBillsTotal);
+
+  // Categorize actual expenses into Fixed vs Flexible
+  const { fixedSpent, flexibleSpent, flexibleExpenses } = useMemo(() => {
+    const fixedKeywords = fixedBills.map((b) => b.name.toLowerCase());
+    const fixedCategories = ['Housing'];
+
+    let fixSum = 0;
+    let flexSum = 0;
+    const flexList = [];
+
+    expenses.forEach((e) => {
+      const amt = Number(e.amount || 0);
+      const mLower = (e.merchant || '').toLowerCase();
+      const isFixed =
+        fixedCategories.includes(e.category) ||
+        fixedKeywords.some((k) => k && mLower.includes(k));
+
+      if (isFixed) {
+        fixSum += amt;
+      } else {
+        flexSum += amt;
+        flexList.push(e);
+      }
+    });
+
+    return { fixedSpent: fixSum, flexibleSpent: flexSum, flexibleExpenses: flexList };
+  }, [expenses, fixedBills]);
+
+  const flexibleRemaining = flexibleBudgetTotal - flexibleSpent;
+  const safeDailyAllowance = daysRemaining > 0 ? Math.max(0, flexibleRemaining / daysRemaining) : 0;
+
+  // Actual daily spend vs safe daily allowance
+  const currentDailyBurn = currentDay > 0 ? flexibleSpent / currentDay : 0;
+
+  let pacingStatus = 'on_track';
+  if (flexibleRemaining <= 0) {
+    pacingStatus = 'deficit';
+  } else if (daysRemaining > 0 && currentDailyBurn > (flexibleBudgetTotal / daysInMonth) * 1.15) {
+    pacingStatus = 'caution';
+  }
+
+  const flexiblePercentUsed =
+    flexibleBudgetTotal > 0 ? Math.min(Math.round((flexibleSpent / flexibleBudgetTotal) * 100), 100) : 0;
+
+  const monthProgressPercent = Math.round((currentDay / daysInMonth) * 100);
+
+  return (
+    <div className="bg-white rounded-2xl border border-indigo-100/90 shadow-sm p-6 relative overflow-hidden space-y-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                Daily Budget Tracker
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className="text-xs text-slate-500 font-medium">
+                Day {currentDay} of {daysInMonth} ({daysRemaining} days left)
+              </span>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 mt-0.5">
+              Monthly Budget & Safe Daily Spending
+            </h3>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          <button
+            type="button"
+            onClick={onOpenBudgetModal}
+            className="inline-flex items-center px-3.5 py-2 text-xs font-bold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+          >
+            <Settings className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
+            Adjust Budget & Fixed Bills
+          </button>
+        </div>
+      </div>
+
+      {/* Main Metric Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Card 1: 3-Tier Budget Allocation */}
+        <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Budget Allocation
+            </span>
+            <span className="text-xs font-black text-slate-900">
+              ₹{monthlyIncome.toLocaleString('en-IN')} Income
+            </span>
+          </div>
+
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200/60">
+              <span className="text-slate-600 flex items-center">
+                <Lock className="w-3 h-3 text-slate-400 mr-1.5" />
+                Fixed Bills (Rent/Plans):
+              </span>
+              <span className="font-bold text-slate-800">
+                ₹{fixedBillsTotal.toLocaleString('en-IN')}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200/60">
+              <span className="text-slate-600 flex items-center">
+                <ShieldCheck className="w-3 h-3 text-emerald-500 mr-1.5" />
+                Savings Goal ({savingsPercent}%):
+              </span>
+              <span className="font-bold text-emerald-600">
+                ₹{savingsTargetAmount.toLocaleString('en-IN')}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded-lg bg-indigo-50/70 border border-indigo-200/70">
+              <span className="text-indigo-900 font-semibold">
+                Daily Spending Budget:
+              </span>
+              <span className="font-black text-indigo-700">
+                ₹{flexibleBudgetTotal.toLocaleString('en-IN')}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Flexible Runway & Burn Rate */}
+        <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Daily Spending So Far
+            </span>
+            <span className="text-xs font-bold text-slate-600">
+              {flexiblePercentUsed}% of daily budget spent
+            </span>
+          </div>
+
+          <div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-2xl font-black text-slate-900">
+                ₹{flexibleSpent.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </span>
+              <span className="text-xs font-semibold text-slate-400">
+                of ₹{flexibleBudgetTotal.toLocaleString('en-IN')} daily budget
+              </span>
+            </div>
+
+            {/* Visual dual progress bar: Month time progress vs Flexible budget spent */}
+            <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden mt-3">
+              <div
+                className={`h-2.5 rounded-full transition-all duration-500 ${
+                  flexibleRemaining <= 0
+                    ? 'bg-rose-500'
+                    : flexiblePercentUsed > monthProgressPercent + 10
+                    ? 'bg-amber-500'
+                    : 'bg-emerald-500'
+                }`}
+                style={{ width: `${Math.min(flexiblePercentUsed, 100)}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+            <span>Money Left: <strong className={flexibleRemaining >= 0 ? 'text-emerald-700' : 'text-rose-700'}>₹{Math.max(0, flexibleRemaining).toLocaleString('en-IN')}</strong></span>
+            <span>Month Elapsed: <strong>{monthProgressPercent}%</strong></span>
+          </div>
+        </div>
+
+        {/* Card 3: Safe Daily Spending Allowance */}
+        <div className={`p-4 rounded-xl border flex flex-col justify-between ${
+          pacingStatus === 'deficit'
+            ? 'bg-rose-50/80 border-rose-200 text-rose-900'
+            : pacingStatus === 'caution'
+            ? 'bg-amber-50/80 border-amber-200 text-amber-900'
+            : 'bg-emerald-50/80 border-emerald-200 text-emerald-900'
+        }`}>
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider">
+                Safe Daily Limit
+              </span>
+              <span className={`inline-flex items-center text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                pacingStatus === 'deficit'
+                  ? 'bg-rose-200/80 text-rose-800'
+                  : pacingStatus === 'caution'
+                  ? 'bg-amber-200/80 text-amber-800'
+                  : 'bg-emerald-200/80 text-emerald-800'
+              }`}>
+                {pacingStatus === 'deficit' ? 'Over Budget' : pacingStatus === 'caution' ? 'Spending Too Fast' : 'On Track'}
+              </span>
+            </div>
+
+            <div className="mt-2">
+              <h4 className="text-3xl font-black">
+                ₹{Math.round(safeDailyAllowance).toLocaleString('en-IN')}
+                <span className="text-xs font-semibold text-slate-500 ml-1">/ day</span>
+              </h4>
+              <p className="text-xs mt-1 leading-relaxed opacity-90">
+                {daysRemaining > 0
+                  ? `For the remaining ${daysRemaining} days to preserve your ₹${savingsTargetAmount.toLocaleString('en-IN')} savings.`
+                  : 'Month completed.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3 pt-2 border-t border-black/10 flex items-center justify-between text-xs font-bold">
+            <span>Spent: ₹{Math.round(currentDailyBurn)}/day so far</span>
+            <span>Fixed bills protected</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default BudgetPacingCard;
