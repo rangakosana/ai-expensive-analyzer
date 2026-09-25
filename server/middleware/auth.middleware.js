@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { query } from '../config/db.js';
 
 export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -34,11 +35,28 @@ export const authenticateToken = (req, res, next) => {
   });
 };
 
-export const requireAdmin = (req, res, next) => {
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Access denied. Administrator privileges required.' });
+export const requireAdmin = async (req, res, next) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: 'Access denied. Authentication required.' });
+    }
+
+    // If role in token is not admin, verify against database to support existing active sessions
+    if (req.user.role !== 'admin') {
+      const dbUser = await query('SELECT role FROM users WHERE id = $1', [req.user.id]);
+      if (dbUser.rows.length > 0 && dbUser.rows[0].role === 'admin') {
+        req.user.role = 'admin';
+      }
+    }
+
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Administrator privileges required.' });
+    }
+
+    next();
+  } catch (error) {
+    next(error);
   }
-  next();
 };
 
 export default authenticateToken;

@@ -116,7 +116,16 @@ export const getMe = async (req, res, next) => {
       return res.status(404).json({ error: 'User profile not found.' });
     }
 
-    res.status(200).json({ user: userResult.rows[0] });
+    const user = userResult.rows[0];
+
+    // Issue refreshed JWT with up-to-date role so client session stays updated
+    const token = jwt.sign(
+      { id: user.id, email: user.email, name: user.name, role: user.role || 'user' },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    res.status(200).json({ user, token });
   } catch (error) {
     next(error);
   }

@@ -20,7 +20,12 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await authService.getMe();
         setUser(response.data.user);
-        setToken(storedToken);
+        if (response.data.token) {
+          localStorage.setItem('token', response.data.token);
+          setToken(response.data.token);
+        } else {
+          setToken(storedToken);
+        }
       } catch (err) {
         console.error('Session verification failed:', err.message);
         localStorage.removeItem('token');
