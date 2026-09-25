@@ -27,10 +27,19 @@ export const authenticateToken = (req, res, next) => {
       id: decoded.id,
       email: decoded.email,
       name: decoded.name,
+      role: decoded.role || 'user',
     };
 
     next();
   });
 };
 
+export const requireAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Administrator privileges required.' });
+  }
+  next();
+};
+
 export default authenticateToken;
+

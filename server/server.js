@@ -10,6 +10,7 @@ import expenseRoutes from './routes/expense.routes.js';
 import insightRoutes from './routes/insight.routes.js';
 import healthRoutes from './routes/health.routes.js';
 import budgetRoutes from './routes/budget.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -40,6 +41,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/insights', insightRoutes);
 app.use('/api/budget', budgetRoutes);
+app.use('/api/admin', adminRoutes);
 
 // In production, serve static frontend assets
 const clientDistPath = path.join(__dirname, '../client/dist');

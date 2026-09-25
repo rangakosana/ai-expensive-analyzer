@@ -14,7 +14,9 @@ import { AddExpensePage } from './pages/AddExpensePage.jsx';
 import { EditExpensePage } from './pages/EditExpensePage.jsx';
 import { InsightsPage } from './pages/InsightsPage.jsx';
 import { CalendarPage } from './pages/CalendarPage.jsx';
+import { AdminPage } from './pages/AdminPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
+import { AdminRoute } from './components/AdminRoute.jsx';
 
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 
@@ -41,6 +43,11 @@ function App() {
                   <Route path="/expenses/new" element={<AddExpensePage />} />
                   <Route path="/expenses/:id/edit" element={<EditExpensePage />} />
                   <Route path="/insights" element={<InsightsPage />} />
+                </Route>
+
+                {/* Admin Only Route */}
+                <Route element={<AdminRoute />}>
+                  <Route path="/admin" element={<AdminPage />} />
                 </Route>
 
                 {/* 404 Route */}

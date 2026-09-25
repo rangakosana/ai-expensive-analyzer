@@ -23,17 +23,17 @@ export const register = async (req, res, next) => {
 
     // Insert user into PostgreSQL
     const insertResult = await query(
-      `INSERT INTO users (name, email, password_hash)
-       VALUES ($1, $2, $3)
-       RETURNING id, name, email, created_at`,
-      [name, email, passwordHash]
+      `INSERT INTO users (name, email, password_hash, role)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, name, email, role, created_at`,
+      [name, email, passwordHash, 'user']
     );
 
     const newUser = insertResult.rows[0];
 
     // Issue JWT
     const token = jwt.sign(
-      { id: newUser.id, email: newUser.email, name: newUser.name },
+      { id: newUser.id, email: newUser.email, name: newUser.name, role: newUser.role || 'user' },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
@@ -45,6 +45,7 @@ export const register = async (req, res, next) => {
         id: newUser.id,
         name: newUser.name,
         email: newUser.email,
+        role: newUser.role || 'user',
         created_at: newUser.created_at,
       },
     });
@@ -60,7 +61,7 @@ export const login = async (req, res, next) => {
 
     // Fetch user from PostgreSQL
     const userResult = await query(
-      `SELECT id, name, email, password_hash, created_at
+      `SELECT id, name, email, role, password_hash, created_at
        FROM users
        WHERE email = $1`,
       [email]
@@ -80,7 +81,7 @@ export const login = async (req, res, next) => {
 
     // Issue JWT
     const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name },
+      { id: user.id, email: user.email, name: user.name, role: user.role || 'user' },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
@@ -92,6 +93,7 @@ export const login = async (req, res, next) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role || 'user',
         created_at: user.created_at,
       },
     });
@@ -104,7 +106,7 @@ export const getMe = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const userResult = await query(
-      `SELECT id, name, email, created_at
+      `SELECT id, name, email, role, created_at
        FROM users
        WHERE id = $1`,
       [userId]

@@ -65,4 +65,13 @@ export const budgetService = {
   saveBudget: (budgetData) => api.post('/budget', budgetData),
 };
 
+export const adminService = {
+  getStats: () => api.get('/admin/stats'),
+  getUsers: () => api.get('/admin/users'),
+  getUserExpenses: (userId) => api.get(`/admin/users/${userId}/expenses`),
+  updateUserRole: (userId, role) => api.patch(`/admin/users/${userId}/role`, { role }),
+  resetUserPassword: (userId, newPassword) => api.post(`/admin/users/${userId}/reset-password`, { newPassword }),
+  deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
+};
+
 export default api;
