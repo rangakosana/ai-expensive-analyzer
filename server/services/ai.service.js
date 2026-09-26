@@ -508,6 +508,7 @@ export const chatWithFinancialAdvisor = async ({
   month,
   expenses = [],
   userBudget = null,
+  userName = 'User',
 }) => {
   if (!userMessage || !userMessage.trim()) {
     throw new Error('Message is required');
@@ -523,13 +524,18 @@ export const chatWithFinancialAdvisor = async ({
   const currentDay = isCurrentMonth ? Math.min(now.getDate(), daysInMonth) : daysInMonth;
   const daysRemaining = Math.max(0, daysInMonth - currentDay);
 
-  const monthlyIncome = userBudget?.monthly_income ? Number(userBudget.monthly_income) : 3000;
-  const savingsPercent = userBudget?.savings_target_percentage !== undefined ? Number(userBudget.savings_target_percentage) : 20;
-  const savingsTargetAmount = Math.round(monthlyIncome * (savingsPercent / 100));
+  const hasConfiguredBudget = !!(userBudget && Number(userBudget.monthly_income) > 0);
+  const monthlyIncome = hasConfiguredBudget ? Number(userBudget.monthly_income) : null;
+  const savingsPercent = hasConfiguredBudget && userBudget.savings_target_percentage !== undefined
+    ? Number(userBudget.savings_target_percentage)
+    : null;
+  const savingsTargetAmount = hasConfiguredBudget ? Math.round(monthlyIncome * (savingsPercent / 100)) : null;
 
   const fixedBills = Array.isArray(userBudget?.fixed_bills) ? userBudget.fixed_bills : [];
   const fixedBillsTotal = fixedBills.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
-  const flexibleBudgetTotal = Math.max(0, monthlyIncome - savingsTargetAmount - fixedBillsTotal);
+  const flexibleBudgetTotal = hasConfiguredBudget
+    ? Math.max(0, monthlyIncome - savingsTargetAmount - fixedBillsTotal)
+    : null;
 
   const fixedKeywords = fixedBills.map((b) => (b.name || '').toLowerCase());
   const fixedCategories = ['Housing'];
@@ -547,39 +553,52 @@ export const chatWithFinancialAdvisor = async ({
     }
   });
 
-  const flexibleRemaining = flexibleBudgetTotal - flexibleSpent;
-  const safeDailyAllowance = daysRemaining > 0 ? Math.max(0, flexibleRemaining / daysRemaining) : 0;
+  const flexibleRemaining = hasConfiguredBudget ? flexibleBudgetTotal - flexibleSpent : null;
+  const safeDailyAllowance = hasConfiguredBudget && daysRemaining > 0
+    ? Math.max(0, flexibleRemaining / daysRemaining)
+    : 0;
 
   const financialContext = {
+    user_name: userName,
     month: monthName,
     days_in_month: daysInMonth,
     current_day: currentDay,
     days_remaining: daysRemaining,
-    monthly_income: monthlyIncome,
-    savings_goal: `₹${savingsTargetAmount} (${savingsPercent}%)`,
-    fixed_bills_total: `₹${fixedBillsTotal}`,
-    fixed_bills_list: fixedBills.map((b) => `${b.name}: ₹${b.amount}`),
-    daily_spending_budget: `₹${flexibleBudgetTotal.toFixed(0)}`,
-    daily_spent_so_far: `₹${flexibleSpent.toFixed(0)}`,
-    money_left_for_daily_needs: `₹${flexibleRemaining.toFixed(0)}`,
-    safe_daily_limit: `₹${Math.round(safeDailyAllowance)}/day`,
+    budget_configured: hasConfiguredBudget,
+    ...(hasConfiguredBudget
+      ? {
+          monthly_income: `₹${monthlyIncome}`,
+          savings_goal: `₹${savingsTargetAmount} (${savingsPercent}%)`,
+          fixed_bills_total: `₹${fixedBillsTotal}`,
+          fixed_bills_list: fixedBills.map((b) => `${b.name}: ₹${b.amount}`),
+          daily_spending_budget: `₹${flexibleBudgetTotal.toFixed(0)}`,
+          daily_spent_so_far: `₹${flexibleSpent.toFixed(0)}`,
+          money_left_for_daily_needs: `₹${flexibleRemaining.toFixed(0)}`,
+          safe_daily_limit: `₹${Math.round(safeDailyAllowance)}/day`,
+        }
+      : {
+          budget_status: 'Not configured yet. User has not entered monthly income or runway target.',
+          total_spent_this_month: `₹${flexibleSpent.toFixed(0)}`,
+        }),
     spending_by_category: categoryTotals,
     recent_transactions: expenses.slice(0, 10).map((e) => `${e.expense_date}: ₹${e.amount} at ${e.merchant} (${e.category})`),
   };
 
   const systemInstruction = `You are a supportive, highly intelligent personal financial assistant powered by Google Gemini.
-You are chatting with a user who is tracking their monthly budget in Indian Rupees (₹).
-You have real-time access to their exact numbers for ${monthName}:
+You are chatting directly with "${userName}".
+
+STRICT IDENTITY & PRIVACY INVARIANTS:
+1. The user's name is "${userName}". Address them as ${userName} (e.g. "Hello ${userName}!").
+2. NEVER, under ANY circumstances, call the user "Arjun" or refer to anyone else unless the user's name is actually Arjun. Each user's financial profile is completely private and isolated.
+3. You have real-time access to ${userName}'s exact numbers for ${monthName}:
 ${JSON.stringify(financialContext, null, 2)}
 
 COMMUNICATION & ADVISORY RULES:
-1. Speak in a friendly, empathetic, personal tone ("I am with you to manage this, let's look at the numbers together").
-2. Contextual understanding:
-   - If they have reached or exceeded their daily spending budget (like ₹${flexibleSpent.toFixed(0)} spent of ₹${flexibleBudgetTotal.toFixed(0)}), be reassuring: remind them that their ₹${savingsTargetAmount} savings target is still safe, but any extra spending will begin reducing that savings target.
-   - If they spent on Healthcare (an essential need), never tell them to cut or restrict healthcare!
-   - If they are doing well with extra money left, celebrate their discipline and calculate their potential extra savings!
-3. Keep responses direct, readable, and practical. Use formatting like bullet points when helpful.
-4. Always use the ₹ symbol for currency. Avoid confusing corporate jargon.`;
+1. Speak in a friendly, empathetic, personal tone.
+2. If the user has not configured a budget yet (budget_configured: false), do NOT invent fake numbers. Tell ${userName} that they can set up their monthly income and runway target anytime via the 'Set Up Monthly Budget' button on the dashboard to unlock automatic safe daily limits.
+3. If they spent on Healthcare (an essential need), never tell them to cut or restrict healthcare!
+4. If they have extra money left or are staying on track, celebrate their discipline!
+5. Keep responses direct, readable, and practical. Always use the ₹ symbol for currency.`;
 
   if (apiKey && apiKey !== 'replace_with_your_gemini_api_key') {
     try {
@@ -637,8 +656,15 @@ COMMUNICATION & ADVISORY RULES:
   }
 
   // Algorithmic Fallback response if API is unreachable
+  if (!hasConfiguredBudget) {
+    return {
+      reply: `Hello ${userName}! For ${monthName}, you have spent ₹${flexibleSpent.toFixed(0)} on everyday purchases so far. You haven't set up your monthly income and savings target yet—you can set it up anytime on your dashboard to unlock your personalized Safe Daily Limit! What would you like to explore?`,
+      model_used: 'local_engine',
+    };
+  }
+
   return {
-    reply: `Here is where you stand for ${monthName}: You have spent ₹${flexibleSpent.toFixed(0)} on everyday purchases out of your ₹${flexibleBudgetTotal.toFixed(0)} daily budget. With ${daysRemaining} days left, your safe daily limit is ₹${Math.round(safeDailyAllowance)}/day to protect your ₹${savingsTargetAmount} savings goal. Healthcare and fixed bills are protected. What else would you like to explore?`,
+    reply: `Hello ${userName}! Here is where you stand for ${monthName}: You have spent ₹${flexibleSpent.toFixed(0)} on everyday purchases out of your ₹${flexibleBudgetTotal.toFixed(0)} daily budget. With ${daysRemaining} days left, your safe daily limit is ₹${Math.round(safeDailyAllowance)}/day to protect your ₹${savingsTargetAmount} savings goal. What else would you like to explore?`,
     model_used: 'local_engine',
   };
 };

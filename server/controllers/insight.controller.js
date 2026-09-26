@@ -96,6 +96,7 @@ export const generateInsight = async (req, res, next) => {
 export const chatWithAdvisor = async (req, res, next) => {
   try {
     const userId = req.user.id;
+    const userName = req.user.name || 'User';
     const { message, history, month = new Date().toISOString().slice(0, 7) } = req.body;
 
     if (!message || !message.trim()) {
@@ -126,6 +127,7 @@ export const chatWithAdvisor = async (req, res, next) => {
       month,
       expenses: expensesResult.rows,
       userBudget,
+      userName,
     });
 
     res.json(chatResponse);

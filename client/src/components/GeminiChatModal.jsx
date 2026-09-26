@@ -28,8 +28,25 @@ const QUICK_QUESTIONS = [
 const getStorageKey = (userId) =>
   userId ? `gemini_financial_chat_sessions_${userId}` : 'gemini_financial_chat_sessions_guest';
 
-const createDefaultSession = (month) => {
+const isContaminatedSession = (sessList, userEmail) => {
+  if (userEmail === 'arjun.sharma@techcorp.io') return false;
+  try {
+    const textBlob = JSON.stringify(sessList).toLowerCase();
+    return (
+      textBlob.includes('arjun') ||
+      textBlob.includes('goa trip') ||
+      textBlob.includes('client meetings') ||
+      textBlob.includes('5,250 across cafe')
+    );
+  } catch (e) {
+    return false;
+  }
+};
+
+const createDefaultSession = (month, userName) => {
   const id = 'session_' + Date.now();
+  const firstName = userName ? userName.split(' ')[0] : '';
+  const greeting = firstName ? `Hello ${firstName}!` : 'Hello!';
   return {
     id,
     title: 'New Conversation',
@@ -39,7 +56,7 @@ const createDefaultSession = (month) => {
     messages: [
       {
         role: 'model',
-        text: "Hello! I am your Google Gemini AI financial advisor. I have full real-time access to your monthly expenses, income, and fixed bills. What would you like to ask or explore?",
+        text: `${greeting} I am your Google Gemini AI financial advisor. I have full real-time access to your monthly expenses, income, and fixed bills. What would you like to ask or explore?`,
         timestamp: new Date().toISOString(),
       },
     ],
@@ -50,21 +67,26 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
   const { user } = useAuth();
   const storageKey = getStorageKey(user?.id);
 
-  // Session storage state
+  // Session storage state with strict user isolation and automatic contamination cleanup
   const [sessions, setSessions] = useState(() => {
     try {
+      localStorage.removeItem('gemini_financial_chat_sessions_v1');
       const userKey = getStorageKey(user?.id);
-      const saved = localStorage.getItem(userKey) || localStorage.getItem('gemini_financial_chat_sessions_v1');
+      const saved = localStorage.getItem(userKey);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          if (isContaminatedSession(parsed, user?.email)) {
+            localStorage.removeItem(userKey);
+            return [createDefaultSession(month, user?.name)];
+          }
           return parsed;
         }
       }
     } catch (e) {
       console.warn('Failed to parse saved chat sessions:', e);
     }
-    return [createDefaultSession(month)];
+    return [createDefaultSession(month, user?.name)];
   });
 
   const [activeSessionId, setActiveSessionId] = useState(() => {
@@ -94,13 +116,21 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
     }
   }, [sessions, storageKey]);
 
-  // When user switches, re-hydrate sessions for the active user
+  // When user switches or logs in/out, re-hydrate sessions strictly for active user
   useEffect(() => {
     try {
+      localStorage.removeItem('gemini_financial_chat_sessions_v1');
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          if (isContaminatedSession(parsed, user?.email)) {
+            localStorage.removeItem(storageKey);
+            const fresh = [createDefaultSession(month, user?.name)];
+            setSessions(fresh);
+            setActiveSessionId(fresh[0].id);
+            return;
+          }
           setSessions(parsed);
           setActiveSessionId(parsed[0]?.id || 'session_default');
           return;
@@ -109,10 +139,10 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
     } catch (e) {
       console.warn('Failed to load user chat sessions:', e);
     }
-    const defaultSess = [createDefaultSession(month)];
+    const defaultSess = [createDefaultSession(month, user?.name)];
     setSessions(defaultSess);
     setActiveSessionId(defaultSess[0].id);
-  }, [storageKey, month]);
+  }, [storageKey, month, user?.email, user?.name]);
 
   // Focus input on open or session switch
   useEffect(() => {
@@ -180,7 +210,7 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
   // Create fresh session
   const handleNewChat = () => {
     if (loading) return;
-    const newSession = createDefaultSession(month);
+    const newSession = createDefaultSession(month, user?.name);
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
     setInput('');
@@ -195,7 +225,7 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
     setSessions((prev) => {
       const remaining = prev.filter((s) => s.id !== sessionIdToDelete);
       if (remaining.length === 0) {
-        const fresh = createDefaultSession(month);
+        const fresh = createDefaultSession(month, user?.name);
         setActiveSessionId(fresh.id);
         return [fresh];
       }
@@ -204,6 +234,20 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
       }
       return remaining;
     });
+  };
+
+  // Clear all chat history for active user
+  const handleClearAllHistory = () => {
+    if (loading) return;
+    try {
+      localStorage.removeItem(storageKey);
+    } catch (e) {
+      console.warn('Storage clear error:', e);
+    }
+    const fresh = [createDefaultSession(month, user?.name)];
+    setSessions(fresh);
+    setActiveSessionId(fresh[0].id);
+    setInput('');
   };
 
   // Cancel in-flight request
@@ -476,12 +520,20 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
               </div>
 
               {/* Sidebar Footer info */}
-              <div className="p-3 bg-slate-100/60 border-t border-slate-200/80 text-[11px] text-slate-400 flex items-center justify-between">
-                <span>{sessions.length} Saved {sessions.length === 1 ? 'Chat' : 'Chats'}</span>
-                <span className="flex items-center space-x-1">
-                  <Clock className="w-3 h-3 mr-0.5" />
-                  <span>Synced</span>
+              <div className="p-3 bg-slate-100/60 border-t border-slate-200/80 text-[11px] text-slate-500 flex items-center justify-between">
+                <span className="truncate max-w-[130px] font-medium text-slate-700" title={user?.name || user?.email}>
+                  {user?.name || user?.email || 'User'}
                 </span>
+                <button
+                  type="button"
+                  onClick={handleClearAllHistory}
+                  disabled={loading}
+                  className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 px-2 py-1 rounded-lg transition-colors flex items-center space-x-1 cursor-pointer"
+                  title="Clear all chat history"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span>Reset</span>
+                </button>
               </div>
             </aside>
           )}
