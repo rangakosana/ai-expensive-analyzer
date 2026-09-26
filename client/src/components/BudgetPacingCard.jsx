@@ -33,7 +33,36 @@ export const BudgetPacingCard = ({
   const currentDay = isCurrentMonth ? Math.min(now.getDate(), daysInMonth) : daysInMonth;
   const daysRemaining = Math.max(0, daysInMonth - currentDay);
 
-  // Budget numbers
+  const fixedBills = Array.isArray(budget?.fixed_bills) ? budget.fixed_bills : [];
+
+  // Categorize actual expenses into Fixed vs Flexible (Hook MUST execute unconditionally at top level)
+  const { fixedSpent, flexibleSpent, flexibleExpenses } = useMemo(() => {
+    const fixedKeywords = fixedBills.map((b) => (b.name || '').toLowerCase());
+    const fixedCategories = ['Housing'];
+
+    let fixSum = 0;
+    let flexSum = 0;
+    const flexList = [];
+
+    expenses.forEach((e) => {
+      const amt = Number(e.amount || 0);
+      const mLower = (e.merchant || '').toLowerCase();
+      const isFixed =
+        fixedCategories.includes(e.category) ||
+        fixedKeywords.some((k) => k && mLower.includes(k));
+
+      if (isFixed) {
+        fixSum += amt;
+      } else {
+        flexSum += amt;
+        flexList.push(e);
+      }
+    });
+
+    return { fixedSpent: fixSum, flexibleSpent: flexSum, flexibleExpenses: flexList };
+  }, [expenses, fixedBills]);
+
+  // Check if budget has been configured by user
   const hasBudgetConfigured = budget && Number(budget.monthly_income) > 0;
 
   if (!hasBudgetConfigured) {
@@ -75,38 +104,8 @@ export const BudgetPacingCard = ({
   const monthlyIncome = Number(budget.monthly_income);
   const savingsPercent = Number(budget?.savings_target_percentage ?? 20);
   const savingsTargetAmount = Math.round(monthlyIncome * (savingsPercent / 100));
-
-  const fixedBills = Array.isArray(budget?.fixed_bills) ? budget.fixed_bills : [];
   const fixedBillsTotal = fixedBills.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
-
   const flexibleBudgetTotal = Math.max(0, monthlyIncome - savingsTargetAmount - fixedBillsTotal);
-
-  // Categorize actual expenses into Fixed vs Flexible
-  const { fixedSpent, flexibleSpent, flexibleExpenses } = useMemo(() => {
-    const fixedKeywords = fixedBills.map((b) => b.name.toLowerCase());
-    const fixedCategories = ['Housing'];
-
-    let fixSum = 0;
-    let flexSum = 0;
-    const flexList = [];
-
-    expenses.forEach((e) => {
-      const amt = Number(e.amount || 0);
-      const mLower = (e.merchant || '').toLowerCase();
-      const isFixed =
-        fixedCategories.includes(e.category) ||
-        fixedKeywords.some((k) => k && mLower.includes(k));
-
-      if (isFixed) {
-        fixSum += amt;
-      } else {
-        flexSum += amt;
-        flexList.push(e);
-      }
-    });
-
-    return { fixedSpent: fixSum, flexibleSpent: flexSum, flexibleExpenses: flexList };
-  }, [expenses, fixedBills]);
 
   const flexibleRemaining = flexibleBudgetTotal - flexibleSpent;
   const safeDailyAllowance = daysRemaining > 0 ? Math.max(0, flexibleRemaining / daysRemaining) : 0;
