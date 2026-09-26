@@ -13,17 +13,7 @@ export const getBudget = async (req, res, next) => {
     );
 
     if (result.rows.length === 0) {
-      // Default initial configuration
-      return res.status(200).json({
-        monthly_income: 3000,
-        savings_target_percentage: 20,
-        fixed_bills: [
-          { id: '1', name: 'House Rent', amount: 1250, category: 'Housing' },
-          { id: '2', name: 'Metro Electric Utility', amount: 120, category: 'Utilities' },
-          { id: '3', name: 'Mobile Recharge', amount: 50, category: 'Utilities' },
-        ],
-        is_default: true,
-      });
+      return res.status(200).json(null);
     }
 
     res.status(200).json(result.rows[0]);

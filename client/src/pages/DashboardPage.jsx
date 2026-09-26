@@ -13,6 +13,7 @@ import {
   CalendarDays,
   X,
   ShieldCheck,
+  HelpCircle,
 } from 'lucide-react';
 import { expenseService, budgetService } from '../services/api.js';
 import { DashboardStats } from '../components/DashboardStats.jsx';
@@ -21,6 +22,7 @@ import { ExpenseTable } from '../components/ExpenseTable.jsx';
 import { DailySpendingStrip } from '../components/DailySpendingStrip.jsx';
 import { BudgetPacingCard } from '../components/BudgetPacingCard.jsx';
 import { BudgetModal } from '../components/BudgetModal.jsx';
+import { OnboardingModal } from '../components/OnboardingModal.jsx';
 import { useToast } from '../components/Toast.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -34,6 +36,7 @@ export const DashboardPage = () => {
   const [monthExpenses, setMonthExpenses] = useState([]);
   const [budget, setBudget] = useState(null);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { error: toastError, success: toastSuccess } = useToast();
@@ -64,6 +67,19 @@ export const DashboardPage = () => {
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
+
+  // Check onboarding tour on user login / register
+  useEffect(() => {
+    if (user?.id) {
+      const hasSeen = localStorage.getItem(`has_seen_onboarding_${user.id}`);
+      if (!hasSeen) {
+        setIsOnboardingOpen(true);
+      }
+    }
+    const handleOpenGuide = () => setIsOnboardingOpen(true);
+    window.addEventListener('open-onboarding-guide', handleOpenGuide);
+    return () => window.removeEventListener('open-onboarding-guide', handleOpenGuide);
+  }, [user?.id]);
 
   // Reset selected date if month changes
   useEffect(() => {
@@ -176,6 +192,17 @@ export const DashboardPage = () => {
             <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 text-amber-600" />
             AI Insights
           </Link>
+
+          {/* In-App Interactive Guide / Slides CTA */}
+          <button
+            type="button"
+            onClick={() => setIsOnboardingOpen(true)}
+            title="Open Interactive Guide & Walkthrough"
+            className="inline-flex items-center px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 transition-colors cursor-pointer"
+          >
+            <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 text-slate-500" />
+            Guide
+          </button>
 
           {/* Quick Add Expense CTA */}
           <Link
@@ -316,6 +343,14 @@ export const DashboardPage = () => {
           setBudget(updated);
           fetchDashboardData();
         }}
+      />
+
+      {/* Interactive In-App Onboarding & Feature Guide Carousel */}
+      <OnboardingModal
+        isOpen={isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
+        onOpenBudgetModal={() => setIsBudgetModalOpen(true)}
+        userId={user?.id}
       />
     </div>
   );

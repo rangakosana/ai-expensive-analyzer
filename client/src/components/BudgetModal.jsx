@@ -16,24 +16,24 @@ import { useToast } from './Toast.jsx';
 export const BudgetModal = ({ isOpen, onClose, onSaveSuccess, currentBudget }) => {
   const { success: toastSuccess, error: toastError } = useToast();
 
-  const [income, setIncome] = useState(3000);
+  const [income, setIncome] = useState('');
   const [savingsPercent, setSavingsPercent] = useState(20);
   const [fixedBills, setFixedBills] = useState([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (currentBudget) {
-      setIncome(Number(currentBudget.monthly_income || 3000));
-      setSavingsPercent(Number(currentBudget.savings_target_percentage ?? 20));
-      setFixedBills(
-        Array.isArray(currentBudget.fixed_bills) && currentBudget.fixed_bills.length > 0
-          ? currentBudget.fixed_bills
-          : [
-              { id: '1', name: 'House Rent', amount: 1250, category: 'Housing' },
-              { id: '2', name: 'Metro Electric Utility', amount: 120, category: 'Utilities' },
-              { id: '3', name: 'Mobile Recharge', amount: 50, category: 'Utilities' },
-            ]
+      setIncome(currentBudget.monthly_income ? Number(currentBudget.monthly_income) : '');
+      setSavingsPercent(
+        currentBudget.savings_target_percentage !== undefined && currentBudget.savings_target_percentage !== null
+          ? Number(currentBudget.savings_target_percentage)
+          : 20
       );
+      setFixedBills(Array.isArray(currentBudget.fixed_bills) ? currentBudget.fixed_bills : []);
+    } else {
+      setIncome('');
+      setSavingsPercent(20);
+      setFixedBills([]);
     }
   }, [currentBudget, isOpen]);
 

@@ -34,7 +34,45 @@ export const BudgetPacingCard = ({
   const daysRemaining = Math.max(0, daysInMonth - currentDay);
 
   // Budget numbers
-  const monthlyIncome = Number(budget?.monthly_income || 3000);
+  const hasBudgetConfigured = budget && Number(budget.monthly_income) > 0;
+
+  if (!hasBudgetConfigured) {
+    return (
+      <div className="bg-gradient-to-r from-indigo-950 via-indigo-900 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden border border-indigo-700/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-start space-x-3.5 max-w-xl">
+          <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-amber-300 flex-shrink-0 mt-0.5">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
+                Setup Required
+              </span>
+              <span className="text-xs text-indigo-200">• Personalized Runway Engine</span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-white mt-1">
+              Configure Your Monthly Budget & Fixed Bills
+            </h3>
+            <p className="text-xs sm:text-sm text-indigo-200 mt-1 leading-relaxed">
+              Enter your monthly earnings and fixed obligations (rent, internet, utilities). Our AI calculates your Safe Daily Spending Limit and protects your savings target.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onOpenBudgetModal}
+          className="inline-flex items-center px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 bg-amber-400 hover:bg-amber-300 shadow-md shadow-amber-900/30 transition-all cursor-pointer whitespace-nowrap"
+        >
+          <Settings className="w-4 h-4 mr-1.5" />
+          Set Up Budget Now
+          <ArrowRight className="w-4 h-4 ml-1.5" />
+        </button>
+      </div>
+    );
+  }
+
+  const monthlyIncome = Number(budget.monthly_income);
   const savingsPercent = Number(budget?.savings_target_percentage ?? 20);
   const savingsTargetAmount = Math.round(monthlyIncome * (savingsPercent / 100));
 

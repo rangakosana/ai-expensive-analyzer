@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { TrendingUp, Lock, Mail, User, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, Lock, Mail, User, ArrowRight, Loader2, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../components/Toast.jsx';
 
@@ -8,6 +8,7 @@ export const RegisterPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -21,8 +22,16 @@ export const RegisterPage = () => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (name.trim().length < 2) {
-      setErrorMsg('Name must be at least 2 characters.');
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (cleanName.length < 2) {
+      setErrorMsg('Full name must be at least 2 characters.');
+      return;
+    }
+
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setErrorMsg('Please enter a valid email address.');
       return;
     }
 
@@ -33,7 +42,7 @@ export const RegisterPage = () => {
 
     setLoading(true);
     try {
-      await register(name.trim(), email.trim(), password);
+      await register(cleanName, cleanEmail, password);
       success('Account created! Welcome to AI Expense Analyzer.');
       navigate('/dashboard', { replace: true });
     } catch (err) {
@@ -70,9 +79,19 @@ export const RegisterPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form
+            method="POST"
+            action="/register"
+            onSubmit={handleSubmit}
+            autoComplete="on"
+            noValidate={false}
+            className="space-y-5"
+          >
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+              <label
+                htmlFor="name"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+              >
                 Full Name
               </label>
               <div className="relative rounded-xl shadow-xs">
@@ -80,8 +99,12 @@ export const RegisterPage = () => {
                   <User className="w-4 h-4" />
                 </div>
                 <input
+                  id="name"
+                  name="name"
                   type="text"
                   required
+                  autoComplete="name"
+                  autoCapitalize="words"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Jane Doe"
@@ -91,7 +114,10 @@ export const RegisterPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+              <label
+                htmlFor="email"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+              >
                 Email Address
               </label>
               <div className="relative rounded-xl shadow-xs">
@@ -99,32 +125,55 @@ export const RegisterPage = () => {
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
+                  id="email"
+                  name="email"
                   type="email"
                   required
+                  autoComplete="username email"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="jane@example.com"
+                  placeholder="jane@company.com"
                   className="block w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50/50 border border-slate-300 rounded-xl focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label
+                  htmlFor="password"
+                  className="block text-xs font-semibold uppercase tracking-wider text-slate-700"
+                >
+                  Password
+                </label>
+              </div>
               <div className="relative rounded-xl shadow-xs">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
-                  type="password"
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 8 characters"
-                  className="block w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50/50 border border-slate-300 rounded-xl focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
+                  className="block w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50/50 border border-slate-300 rounded-xl focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-hidden cursor-pointer"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
               <div className="mt-2 flex items-center space-x-1.5 text-xs">
                 <span className={isPasswordValid ? 'text-emerald-600 flex items-center' : 'text-slate-400 flex items-center'}>
@@ -137,12 +186,12 @@ export const RegisterPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 shadow-md shadow-indigo-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 shadow-md shadow-indigo-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating account...
+                  Creating Account...
                 </>
               ) : (
                 <>
@@ -157,7 +206,7 @@ export const RegisterPage = () => {
             <p className="text-sm text-slate-500">
               Already have an account?{' '}
               <Link to="/login" className="font-semibold text-indigo-600 hover:text-indigo-700">
-                Log in here
+                Sign in
               </Link>
             </p>
           </div>
