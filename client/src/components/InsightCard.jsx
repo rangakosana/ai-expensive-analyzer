@@ -41,6 +41,26 @@ export const InsightCard = ({ insight, month, onRegenerate, isGenerating, onOpen
 
   const flex = data.flexible_analysis;
 
+  const unnecessaryItems = Array.isArray(data.unnecessary_spending_identified)
+    ? data.unnecessary_spending_identified
+    : typeof data.unnecessary_spending_identified === 'string' && data.unnecessary_spending_identified.trim()
+    ? [data.unnecessary_spending_identified]
+    : [];
+
+  const tipsList = Array.isArray(data.actionable_tips)
+    ? data.actionable_tips
+    : typeof data.actionable_tips === 'string' && data.actionable_tips.trim()
+    ? [data.actionable_tips]
+    : [];
+
+  const categoryBreakdown = Array.isArray(data.category_breakdown)
+    ? data.category_breakdown.map((cat) => ({
+        category: cat.category,
+        total_spent: cat.total_spent ?? cat.total ?? 0,
+        percentage_of_total: cat.percentage_of_total ?? cat.percentage ?? 0,
+      }))
+    : [];
+
   return (
     <div className="bg-white rounded-2xl border border-indigo-100 shadow-md overflow-hidden transition-all min-w-0">
       {/* Card Header with gradient banner */}
@@ -164,14 +184,14 @@ export const InsightCard = ({ insight, month, onRegenerate, isGenerating, onOpen
         )}
 
         {/* Section 1: Category Breakdown */}
-        {data.category_breakdown && data.category_breakdown.length > 0 && (
+        {categoryBreakdown.length > 0 && (
           <div>
             <div className="flex items-center space-x-2 text-slate-900 mb-4">
               <TrendingUp className="w-5 h-5 text-indigo-600" />
               <h3 className="text-base font-bold">Category Breakdown</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.category_breakdown.map((cat, idx) => (
+              {categoryBreakdown.map((cat, idx) => (
                 <div
                   key={idx}
                   className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-indigo-200 transition-colors"
@@ -203,9 +223,9 @@ export const InsightCard = ({ insight, month, onRegenerate, isGenerating, onOpen
             <AlertTriangle className="w-5 h-5 text-amber-600" />
             <h3 className="text-base font-bold">Spending Observations</h3>
           </div>
-          {data.unnecessary_spending_identified && data.unnecessary_spending_identified.length > 0 ? (
+          {unnecessaryItems.length > 0 ? (
             <div className="space-y-2.5">
-              {data.unnecessary_spending_identified.map((item, idx) => (
+              {unnecessaryItems.map((item, idx) => (
                 <div
                   key={idx}
                   className="flex items-start p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/70 text-amber-950 text-sm"
@@ -242,8 +262,7 @@ export const InsightCard = ({ insight, month, onRegenerate, isGenerating, onOpen
             <h3 className="text-base font-bold">Action Plan for the Rest of the Month</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {data.actionable_tips &&
-              data.actionable_tips.map((tip, idx) => {
+            {tipsList.map((tip, idx) => {
                 const style = TIP_COLORS[idx] || TIP_COLORS[0];
                 const title = TIP_TITLES[idx] || `Recommendation #${idx + 1}`;
 
