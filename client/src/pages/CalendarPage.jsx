@@ -247,42 +247,42 @@ export const CalendarPage = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 min-w-0">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center space-x-2.5">
-            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100">
-              <CalendarIcon className="w-6 h-6" />
+            <div className="p-1.5 sm:p-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 flex-shrink-0">
+              <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                Monthly Calendar & Daily Activity
+              <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Monthly Calendar
               </h1>
-              <p className="text-sm text-slate-500 mt-0.5">
-                Explore day-by-day spending, inspect transactions on any date, and log new purchases
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Explore day-by-day spending and log purchases
               </p>
             </div>
           </div>
         </div>
 
         {/* Month Navigation & Action Controls */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <div className="flex items-center bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
             <button
               onClick={() => handleShiftMonth(-1)}
               title="Previous Month"
-              className="p-2 hover:bg-slate-100 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 hover:bg-slate-100 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <div className="px-3 py-1.5 text-sm font-bold text-slate-800 border-x border-slate-100 min-w-[140px] text-center">
+            <div className="px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-bold text-slate-800 border-x border-slate-100 min-w-[110px] sm:min-w-[140px] text-center">
               {MONTH_NAMES[monthNum - 1]} {yearNum}
             </div>
             <button
               onClick={() => handleShiftMonth(1)}
               title="Next Month"
-              className="p-2 hover:bg-slate-100 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 hover:bg-slate-100 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -290,7 +290,7 @@ export const CalendarPage = () => {
 
           <button
             onClick={handleJumpToToday}
-            className="px-3 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+            className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
           >
             Today
           </button>
@@ -299,90 +299,90 @@ export const CalendarPage = () => {
             onClick={fetchMonthExpenses}
             title="Refresh"
             disabled={loading}
-            className="p-2 text-slate-500 hover:text-indigo-600 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 transition-colors shadow-2xs disabled:opacity-50"
+            className="p-1.5 sm:p-2 text-slate-500 hover:text-indigo-600 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 transition-colors shadow-2xs disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
           </button>
 
           <Link
             to={`/expenses/new?date=${selectedDate}`}
-            className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-100 transition-colors"
+            className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs shadow-indigo-100 transition-colors ml-auto sm:ml-0"
           >
-            <PlusCircle className="w-4 h-4 mr-1.5" />
+            <PlusCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
             Add for {selectedDate.slice(8)}th
           </Link>
         </div>
       </div>
 
       {/* Monthly Summary Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Total Month Spent
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <div className="p-3 sm:p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
+            Total Spent
           </p>
-          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
-            ₹{monthMetrics.totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <h3 className="text-base sm:text-2xl font-extrabold text-slate-900 mt-0.5 sm:mt-1 truncate">
+            ₹{monthMetrics.totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
           </h3>
-          <p className="text-xs text-slate-400 mt-2 flex items-center">
-            Across {monthMetrics.transactionCount} total transaction{monthMetrics.transactionCount !== 1 ? 's' : ''}
+          <p className="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-2 truncate">
+            {monthMetrics.transactionCount} transaction{monthMetrics.transactionCount !== 1 ? 's' : ''}
           </p>
         </div>
 
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Active Spending Days
+        <div className="p-3 sm:p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
+            Active Days
           </p>
-          <h3 className="text-2xl font-extrabold text-indigo-600 mt-1">
-            {monthMetrics.activeDayCount} <span className="text-sm font-normal text-slate-500">days</span>
+          <h3 className="text-base sm:text-2xl font-extrabold text-indigo-600 mt-0.5 sm:mt-1 truncate">
+            {monthMetrics.activeDayCount} <span className="text-xs font-normal text-slate-500">days</span>
           </h3>
-          <p className="text-xs text-slate-400 mt-2">
-            Days with logged expenses
+          <p className="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-2 truncate">
+            With recorded spending
           </p>
         </div>
 
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Highest Spending Day
+        <div className="p-3 sm:p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
+            Highest Day
           </p>
-          <h3 className="text-2xl font-extrabold text-amber-600 mt-1">
+          <h3 className="text-base sm:text-2xl font-extrabold text-amber-600 mt-0.5 sm:mt-1 truncate">
             {monthMetrics.highestDay
-              ? `₹${monthMetrics.highestDay.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              ? `₹${monthMetrics.highestDay.amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
               : 'None'}
           </h3>
-          <p className="text-xs text-slate-400 mt-2 truncate">
-            {monthMetrics.highestDay ? `Peak on ${monthMetrics.highestDay.date}` : 'No expenditure recorded'}
+          <p className="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-2 truncate">
+            {monthMetrics.highestDay ? `Peak on ${monthMetrics.highestDay.date}` : 'No records'}
           </p>
         </div>
 
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Daily Average (Active)
+        <div className="p-3 sm:p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
+            Daily Average
           </p>
-          <h3 className="text-2xl font-extrabold text-emerald-600 mt-1">
-            ₹{monthMetrics.averagePerActiveDay.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <h3 className="text-base sm:text-2xl font-extrabold text-emerald-600 mt-0.5 sm:mt-1 truncate">
+            ₹{monthMetrics.averagePerActiveDay.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </h3>
-          <p className="text-xs text-slate-400 mt-2">
-            Average per active spending day
+          <p className="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-2 truncate">
+            Per active day
           </p>
         </div>
       </div>
 
       {/* Main Grid: Calendar Grid (7 cols) + Selected Day Inspector (5 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-start min-w-0">
         {/* Calendar Grid View (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-6 space-y-4">
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3 sm:p-6 space-y-3 sm:space-y-4 min-w-0">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h2 className="text-lg font-bold text-slate-900 flex items-center">
-              <CalendarIcon className="w-5 h-5 mr-2 text-indigo-600" />
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center">
+              <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-indigo-600" />
               {MONTH_NAMES[monthNum - 1]} {yearNum}
             </h2>
-            <div className="text-xs text-slate-500 font-medium">
-              Click any date to inspect transactions
+            <div className="text-[11px] sm:text-xs text-slate-500 font-medium">
+              Tap any date to inspect
             </div>
           </div>
 
           {/* Weekday Headers */}
-          <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-1 border-b border-slate-100">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider py-1 border-b border-slate-100">
             {WEEKDAYS.map((day, i) => (
               <div key={day} className={i === 0 || i === 6 ? 'text-slate-400' : ''}>
                 {day}
@@ -391,7 +391,7 @@ export const CalendarPage = () => {
           </div>
 
           {/* Days Grid */}
-          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2 min-w-0">
             {calendarGrid.map((cell, idx) => {
               const isSelected = cell.dateStr === selectedDate;
               const hasItems = cell.hasExpenses;
@@ -402,11 +402,11 @@ export const CalendarPage = () => {
                   type="button"
                   disabled={!cell.isCurrentMonth}
                   onClick={() => cell.isCurrentMonth && setSelectedDate(cell.dateStr)}
-                  className={`min-h-[76px] sm:min-h-[88px] p-1.5 sm:p-2 rounded-xl text-left flex flex-col justify-between transition-all duration-150 relative border cursor-pointer ${
+                  className={`min-h-[52px] sm:min-h-[88px] p-1 sm:p-2 rounded-lg sm:rounded-xl text-left flex flex-col justify-between transition-all duration-150 relative border cursor-pointer ${
                     !cell.isCurrentMonth
                       ? 'bg-slate-50/50 border-transparent text-slate-300 opacity-40 cursor-default'
                       : isSelected
-                      ? 'bg-indigo-50/80 border-indigo-600 ring-2 ring-indigo-500/20 shadow-sm'
+                      ? 'bg-indigo-50/80 border-indigo-600 ring-2 ring-indigo-500/20 shadow-xs'
                       : hasItems
                       ? 'bg-white hover:bg-slate-50 border-slate-200 hover:border-indigo-300'
                       : 'bg-white hover:bg-slate-50/80 border-slate-100 hover:border-slate-300 text-slate-700'
@@ -415,7 +415,7 @@ export const CalendarPage = () => {
                   {/* Day header: Day number & Today indicator */}
                   <div className="flex items-center justify-between w-full">
                     <span
-                      className={`text-xs sm:text-sm font-bold w-6 h-6 flex items-center justify-center rounded-full transition-colors ${
+                      className={`text-[11px] sm:text-sm font-bold w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full transition-colors ${
                         cell.isToday
                           ? 'bg-indigo-600 text-white'
                           : isSelected
@@ -434,30 +434,30 @@ export const CalendarPage = () => {
                   </div>
 
                   {/* Day content: Spending pill or empty state */}
-                  <div className="w-full mt-1">
+                  <div className="w-full mt-0.5 sm:mt-1">
                     {hasItems ? (
-                      <div className="space-y-1">
-                        <div className="inline-flex items-center w-full px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-[10px] sm:text-xs font-bold truncate">
-                          ₹{cell.totalAmount >= 1000 ? `${(cell.totalAmount / 1000).toFixed(1)}k` : cell.totalAmount}
+                      <div className="space-y-0.5 sm:space-y-1">
+                        <div className="inline-flex items-center w-full px-1 py-0.2 sm:py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-[8px] sm:text-xs font-bold truncate">
+                          ₹{cell.totalAmount >= 1000 ? `${(cell.totalAmount / 1000).toFixed(1)}k` : Math.round(cell.totalAmount)}
                         </div>
                         {/* Category Dots */}
-                        <div className="flex items-center space-x-1 overflow-hidden">
+                        <div className="flex items-center space-x-0.5 sm:space-x-1 overflow-hidden">
                           {cell.expenses.slice(0, 3).map((exp, expIdx) => (
                             <span
                               key={expIdx}
-                              className={`w-1.5 h-1.5 rounded-full ${CATEGORY_DOT_COLORS[exp.category] || 'bg-slate-400'}`}
+                              className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${CATEGORY_DOT_COLORS[exp.category] || 'bg-slate-400'}`}
                               title={exp.category}
                             />
                           ))}
                           {cell.expenses.length > 3 && (
-                            <span className="text-[9px] text-slate-400 leading-none">
+                            <span className="text-[8px] sm:text-[9px] text-slate-400 leading-none">
                               +{cell.expenses.length - 3}
                             </span>
                           )}
                         </div>
                       </div>
                     ) : cell.isCurrentMonth ? (
-                      <div className="h-4"></div>
+                      <div className="h-2 sm:h-4"></div>
                     ) : null}
                   </div>
                 </button>

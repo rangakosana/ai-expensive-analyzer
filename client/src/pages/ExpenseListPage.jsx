@@ -118,32 +118,32 @@ export const ExpenseListPage = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-3 sm:space-y-6 min-w-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center space-x-2">
-            <Receipt className="w-6 h-6 text-indigo-600" />
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <Receipt className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" />
+            <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Expense Records
             </h1>
           </div>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             Search, filter, and manage all logged transactions
           </p>
         </div>
 
         <Link
           to="/expenses/new"
-          className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-100 transition-colors"
+          className="inline-flex items-center justify-center px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs shadow-indigo-100 transition-colors self-start sm:self-auto"
         >
-          <PlusCircle className="w-4 h-4 mr-2" />
-          Add New Expense
+          <PlusCircle className="w-4 h-4 mr-1.5" />
+          Add Expense
         </Link>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
+      <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
         {/* Date Filter Type Tabs */}
         <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
           <div className="flex flex-wrap items-center gap-1.5 bg-slate-100/80 p-1 rounded-xl text-xs font-semibold text-slate-600">

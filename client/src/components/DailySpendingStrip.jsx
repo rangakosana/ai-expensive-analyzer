@@ -101,46 +101,46 @@ export const DailySpendingStrip = ({
   }, [selectedDate, expensesByDate]);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-4">
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-5 space-y-3 sm:space-y-4 min-w-0">
       {/* Widget Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 sm:pb-3 border-b border-slate-100">
         <div>
           <div className="flex items-center space-x-2">
-            <CalendarIcon className="w-5 h-5 text-indigo-600" />
-            <h3 className="text-base sm:text-lg font-bold text-slate-900">
+            <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+            <h3 className="text-sm sm:text-lg font-bold text-slate-900">
               Daily Spending & Date Explorer
             </h3>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Click any day in the month to inspect your daily transactions
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+            Tap any day to inspect transactions
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 self-end sm:self-auto">
           {selectedDate && (
             <button
               type="button"
               onClick={() => onSelectDate('')}
-              className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+              className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
             >
               <X className="w-3.5 h-3.5 mr-1" />
-              Reset Day
+              Reset
             </button>
           )}
 
           <Link
             to="/calendar"
-            className="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200/70 transition-colors"
+            className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200/70 transition-colors"
           >
-            Full Calendar View
-            <ChevronRight className="w-3.5 h-3.5 ml-1" />
+            Calendar
+            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
           </Link>
         </div>
       </div>
 
       {/* Horizontal Day Strip */}
-      <div className="relative">
-        <div className="flex items-center space-x-2 overflow-x-auto pb-2 pt-1 scrollbar-thin scrollbar-thumb-slate-200">
+      <div className="relative min-w-0">
+        <div className="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto pb-2 pt-1 no-scrollbar sm:scrollbar-thin">
           {daysInMonth.map((day) => {
             const isSelected = selectedDate === day.dateStr;
 
@@ -149,9 +149,9 @@ export const DailySpendingStrip = ({
                 key={day.dayNum}
                 type="button"
                 onClick={() => onSelectDate(isSelected ? '' : day.dateStr)}
-                className={`flex-shrink-0 w-16 sm:w-18 py-2.5 px-1.5 rounded-xl border text-center transition-all duration-150 cursor-pointer ${
+                className={`flex-shrink-0 w-13 sm:w-18 py-1.5 sm:py-2.5 px-1 sm:px-1.5 rounded-xl border text-center transition-all duration-150 cursor-pointer ${
                   isSelected
-                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200 scale-105'
+                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200 scale-102'
                     : day.isToday
                     ? 'bg-indigo-50/70 border-indigo-300 text-indigo-900 hover:bg-indigo-100'
                     : day.hasExpenses
@@ -160,14 +160,14 @@ export const DailySpendingStrip = ({
                 }`}
               >
                 <div
-                  className={`text-[10px] font-bold uppercase tracking-wider ${
+                  className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${
                     isSelected ? 'text-indigo-100' : 'text-slate-400'
                   }`}
                 >
                   {day.weekday}
                 </div>
                 <div
-                  className={`text-base sm:text-lg font-black leading-tight my-0.5 ${
+                  className={`text-sm sm:text-lg font-black leading-tight my-0.5 ${
                     isSelected ? 'text-white' : 'text-slate-900'
                   }`}
                 >
@@ -175,7 +175,7 @@ export const DailySpendingStrip = ({
                 </div>
                 {day.hasExpenses ? (
                   <div
-                    className={`text-[10px] font-bold truncate px-1 rounded-sm ${
+                    className={`text-[9px] sm:text-[10px] font-bold truncate px-0.5 sm:px-1 rounded-sm ${
                       isSelected
                         ? 'bg-indigo-700/80 text-indigo-50'
                         : 'bg-emerald-100/80 text-emerald-800'
@@ -185,7 +185,7 @@ export const DailySpendingStrip = ({
                   </div>
                 ) : (
                   <div
-                    className={`text-[10px] ${
+                    className={`text-[9px] sm:text-[10px] ${
                       isSelected ? 'text-indigo-200' : 'text-slate-300'
                     }`}
                   >
@@ -200,7 +200,7 @@ export const DailySpendingStrip = ({
 
       {/* Selected Day Details Panel */}
       {activeDayData && (
-        <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3 transition-all animate-fadeIn">
+        <div className="mt-3 p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5 transition-all animate-fadeIn">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200">
             <div>
               <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">

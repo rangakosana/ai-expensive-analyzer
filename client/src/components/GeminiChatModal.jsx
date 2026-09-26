@@ -65,7 +65,12 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
     return sessions[0]?.id || 'session_default';
   });
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return false;
+  });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingTime, setLoadingTime] = useState(0);
@@ -305,37 +310,37 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
-      <div className="relative bg-white rounded-3xl shadow-2xl max-w-5xl w-full flex flex-col h-[88vh] max-h-[800px] overflow-hidden border border-slate-200">
+    <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+      <div className="relative bg-white rounded-none sm:rounded-3xl shadow-2xl max-w-5xl w-full flex flex-col h-full sm:h-[88vh] max-h-none sm:max-h-[800px] overflow-hidden border-0 sm:border border-slate-200">
         {/* Main Header */}
-        <div className="p-4 sm:p-5 bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 text-white flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+        <div className="p-3.5 sm:p-5 bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 text-white flex items-center justify-between">
+          <div className="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
             {/* Sidebar Toggle Button */}
             <button
               onClick={() => setIsSidebarOpen((prev) => !prev)}
-              className="p-2 text-indigo-200 hover:text-white rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 text-indigo-200 hover:text-white rounded-xl hover:bg-white/10 transition-colors cursor-pointer flex-shrink-0"
               title={isSidebarOpen ? 'Hide History' : 'Show History'}
             >
               {isSidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
             </button>
 
-            <div className="w-9 h-9 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-amber-300 border border-white/20">
-              <Sparkles className="w-5 h-5 animate-pulse" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-amber-300 border border-white/20 flex-shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
             </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <h3 className="font-bold text-base sm:text-lg text-white">Google Gemini Financial Advisor</h3>
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+            <div className="min-w-0">
+              <div className="flex items-center space-x-1.5">
+                <h3 className="font-bold text-sm sm:text-lg text-white truncate">Gemini Financial Advisor</h3>
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 flex-shrink-0">
                   Live AI
                 </span>
               </div>
-              <p className="text-xs text-indigo-200">
-                Personalized advice with real-time access to your {currentSession.month || month || 'active'} budget
+              <p className="text-[11px] sm:text-xs text-indigo-200 truncate">
+                Real-time advisor for {currentSession.month || month || 'active'} budget
               </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 flex-shrink-0">
             <button
               onClick={handleNewChat}
               disabled={loading}
@@ -347,7 +352,7 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-indigo-200 hover:text-white rounded-xl hover:bg-white/10 transition-colors cursor-pointer ml-1"
+              className="p-1.5 sm:p-2 text-indigo-200 hover:text-white rounded-xl hover:bg-white/10 transition-colors cursor-pointer ml-1"
               title="Close Chat"
             >
               <X className="w-5 h-5" />
@@ -356,19 +361,37 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
         </div>
 
         {/* Body Container: Sidebar + Chat Area */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden relative">
+          {/* Mobile Backdrop Overlay */}
+          {isSidebarOpen && (
+            <div
+              onClick={() => setIsSidebarOpen(false)}
+              className="md:hidden fixed inset-0 bg-slate-900/50 z-20 backdrop-blur-2xs animate-fadeIn"
+            />
+          )}
+
           {/* ChatGPT/Gemini Style History Sidebar */}
           {isSidebarOpen && (
-            <aside className="w-64 sm:w-72 bg-slate-50 border-r border-slate-200 flex flex-col flex-shrink-0 animate-in slide-in-from-left duration-200">
-              {/* New Chat Button */}
-              <div className="p-3 border-b border-slate-200/80">
+            <aside className="absolute md:static inset-y-0 left-0 z-30 w-72 bg-slate-50 border-r border-slate-200 flex flex-col flex-shrink-0 shadow-2xl md:shadow-none animate-in slide-in-from-left duration-200">
+              {/* New Chat Button & Mobile Close */}
+              <div className="p-3 border-b border-slate-200/80 flex items-center gap-2">
                 <button
-                  onClick={handleNewChat}
+                  onClick={() => {
+                    handleNewChat();
+                    if (window.innerWidth < 768) setIsSidebarOpen(false);
+                  }}
                   disabled={loading}
-                  className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-xs font-bold shadow-xs hover:shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-xs font-bold shadow-xs hover:shadow-sm transition-all cursor-pointer disabled:opacity-50"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>+ New Chat</span>
+                  <span>New Chat</span>
+                </button>
+                <button
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="md:hidden p-2 text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-200/60"
+                  title="Close sidebar"
+                >
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
@@ -387,7 +410,10 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
                           <div
                             key={session.id}
                             onClick={() => {
-                              if (!loading) setActiveSessionId(session.id);
+                              if (!loading) {
+                                setActiveSessionId(session.id);
+                                if (window.innerWidth < 768) setIsSidebarOpen(false);
+                              }
                             }}
                             className={`group relative flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-all ${
                               isActive
@@ -509,10 +535,10 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
                   <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
                     <Bot className="w-4 h-4" />
                   </div>
-                  <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-xs p-3.5 shadow-xs text-xs text-slate-600 flex items-center justify-between gap-3 min-w-[280px]">
-                    <div className="flex items-center space-x-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
-                      <span className="font-medium">
+                  <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-xs p-3 sm:p-3.5 shadow-xs text-xs text-slate-600 flex items-center justify-between gap-2 min-w-0 max-w-full">
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <Loader2 className="w-4 h-4 animate-spin text-indigo-600 flex-shrink-0" />
+                      <span className="font-medium truncate text-xs">
                         {loadingTime > 4
                           ? 'Finalizing response with Gemini...'
                           : 'Google Gemini is analyzing your expenses...'}
@@ -521,7 +547,7 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
                     <button
                       type="button"
                       onClick={handleCancel}
-                      className="text-[11px] font-bold text-slate-400 hover:text-rose-600 px-2 py-0.5 rounded border border-slate-200 hover:border-rose-200 hover:bg-rose-50 transition-colors cursor-pointer"
+                      className="text-[11px] font-bold text-slate-400 hover:text-rose-600 px-2 py-0.5 rounded border border-slate-200 hover:border-rose-200 hover:bg-rose-50 transition-colors cursor-pointer flex-shrink-0"
                     >
                       Cancel
                     </button>
@@ -533,7 +559,7 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
             </div>
 
             {/* Input Bar */}
-            <div className="p-3 sm:p-4 bg-white border-t border-slate-200">
+            <div className="p-2.5 sm:p-4 bg-white border-t border-slate-200">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -547,15 +573,15 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask Gemini about your expenses, savings, or advice..."
+                  placeholder="Ask Gemini about your expenses or budget..."
                   disabled={loading}
-                  className="flex-1 px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all font-medium"
+                  className="flex-1 px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all font-medium"
                 />
 
                 <button
                   type="submit"
                   disabled={!input.trim() || loading}
-                  className="px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm flex items-center justify-center cursor-pointer"
+                  className="px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm flex items-center justify-center cursor-pointer flex-shrink-0"
                   title="Send Message"
                 >
                   {loading ? (
@@ -565,9 +591,9 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
                   )}
                 </button>
               </form>
-              <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2 px-1">
-                <span>Powered by Google Gemini</span>
-                <span>Indian Rupees (₹) • Persistent History</span>
+              <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 mt-1.5 px-1">
+                <span className="truncate">Google Gemini AI</span>
+                <span className="truncate">Indian Rupees (₹)</span>
               </div>
             </div>
           </main>

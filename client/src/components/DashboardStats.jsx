@@ -5,7 +5,7 @@ import { CardSkeleton } from './LoadingSpinner.jsx';
 export const DashboardStats = ({ summary, loading }) => {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-4 sm:mb-6">
         <CardSkeleton />
         <CardSkeleton />
         <CardSkeleton />
@@ -22,57 +22,57 @@ export const DashboardStats = ({ summary, loading }) => {
   const stats = [
     {
       label: 'Total Spending',
-      value: `₹${totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      description: 'Total for selected month',
+      value: `₹${totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+      description: 'Selected month',
       icon: IndianRupee,
       color: 'bg-emerald-50 text-emerald-600 border-emerald-100',
     },
     {
       label: 'Top Category',
       value: topCategory,
-      description: topCategory !== 'None' ? 'Highest expenditure area' : 'No spending recorded',
+      description: topCategory !== 'None' ? 'Highest spend' : 'No spend',
       icon: Tag,
       color: 'bg-indigo-50 text-indigo-600 border-indigo-100',
     },
     {
       label: 'Transactions',
       value: transactionCount,
-      description: 'Logged records this month',
+      description: 'Logged records',
       icon: CreditCard,
       color: 'bg-sky-50 text-sky-600 border-sky-100',
     },
     {
-      label: 'Average / Transaction',
-      value: `₹${averageSpent.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      description: 'Per recorded transaction',
+      label: 'Avg / Expense',
+      value: `₹${averageSpent.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+      description: 'Per transaction',
       icon: Calculator,
       color: 'bg-amber-50 text-amber-600 border-amber-100',
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-4 sm:mb-6">
       {stats.map((stat, idx) => {
         const Icon = stat.icon;
         return (
           <div
             key={idx}
-            className="p-5 bg-white rounded-xl shadow-sm border border-slate-200/80 hover:shadow-md transition-shadow duration-200"
+            className="p-3 sm:p-5 bg-white rounded-xl shadow-2xs border border-slate-200/80 hover:shadow-xs transition-shadow duration-200 flex flex-col justify-between"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <div className="flex items-start justify-between gap-1.5">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
                   {stat.label}
                 </p>
-                <h3 className="text-2xl font-bold text-slate-900 mt-1 truncate">
+                <h3 className="text-base sm:text-2xl font-extrabold text-slate-900 mt-1 truncate">
                   {stat.value}
                 </h3>
               </div>
-              <div className={`p-3 rounded-xl border ${stat.color}`}>
-                <Icon className="w-5 h-5" />
+              <div className={`p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl border ${stat.color} flex-shrink-0`}>
+                <Icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
               </div>
             </div>
-            <p className="text-xs text-slate-400 mt-3">{stat.description}</p>
+            <p className="text-[10px] sm:text-xs text-slate-400 mt-1.5 sm:mt-3 truncate">{stat.description}</p>
           </div>
         );
       })}

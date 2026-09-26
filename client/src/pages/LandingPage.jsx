@@ -18,24 +18,24 @@ export const LandingPage = () => {
   return (
     <div className="bg-gradient-to-b from-slate-50 via-white to-slate-50 min-h-screen">
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 sm:pt-24 sm:pb-28 text-center">
-        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200/80 text-indigo-700 text-xs font-semibold uppercase tracking-wider mb-6 animate-pulse">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-14 sm:pt-24 sm:pb-28 text-center">
+        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200/80 text-indigo-700 text-xs font-semibold uppercase tracking-wider mb-5 animate-pulse">
           <Sparkles className="w-3.5 h-3.5 text-amber-500" />
           <span>Powered by Google Gemini 2.5 Flash</span>
         </div>
 
-        <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-4xl mx-auto leading-tight sm:leading-tight">
+        <h1 className="text-3xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-4xl mx-auto leading-tight sm:leading-tight">
           Transform Raw Expenses into <br className="hidden sm:inline" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-indigo-400">
             Intelligent Financial Advice
           </span>
         </h1>
 
-        <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+        <p className="mt-4 sm:mt-6 text-base sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
           Traditional expense trackers are just digital ledgers. The AI Expense Analyzer tracks your daily transactions, categorizes your spending habits, and leverages Generative AI to pinpoint waste and provide actionable financial tips.
         </p>
 
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
           {isAuthenticated ? (
             <Link
               to="/dashboard"
@@ -64,43 +64,43 @@ export const LandingPage = () => {
         </div>
 
         {/* Feature Highlights Grid */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+        <div className="mt-12 sm:mt-20 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8 text-left">
           {/* Card 1 */}
-          <div className="p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5">
-              <Sparkles className="w-6 h-6" />
+          <div className="p-5 sm:p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4 sm:mb-5">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">AI Financial Advisor</h3>
-            <p className="text-slate-600 text-sm leading-relaxed">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1.5 sm:mb-2">AI Financial Advisor</h3>
+            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
               Bundles your monthly spending data and queries Gemini with a strict financial advisory prompt to detect micro-overspending and suggest 3 high-impact habits.
             </p>
           </div>
 
           {/* Card 2 */}
-          <div className="p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-5">
-              <PieChart className="w-6 h-6" />
+          <div className="p-5 sm:p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 sm:mb-5">
+              <PieChart className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Visual Breakdown</h3>
-            <p className="text-slate-600 text-sm leading-relaxed">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1.5 sm:mb-2">Visual Breakdown</h3>
+            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
               Instant category distributions, interactive donut charts, and monthly trend graphs so you always know where your money goes.
             </p>
           </div>
 
           {/* Card 3 */}
-          <div className="p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center mb-5">
-              <ShieldCheck className="w-6 h-6" />
+          <div className="p-5 sm:p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center mb-4 sm:mb-5">
+              <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Bank-Grade Isolation</h3>
-            <p className="text-slate-600 text-sm leading-relaxed">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1.5 sm:mb-2">Bank-Grade Isolation</h3>
+            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
               Strict backend authorization enforcing row-level security. Your financial data is securely hashed, validated via Zod, and never shared.
             </p>
           </div>
         </div>
 
         {/* Categories Supported */}
-        <div className="mt-16 p-6 rounded-2xl bg-indigo-50/50 border border-indigo-100 max-w-4xl mx-auto">
+        <div className="mt-10 sm:mt-16 p-4 sm:p-6 rounded-2xl bg-indigo-50/50 border border-indigo-100 max-w-4xl mx-auto">
           <p className="text-xs font-bold uppercase tracking-wider text-indigo-700 mb-3">
             9 Supported Expense Categories
           </p>

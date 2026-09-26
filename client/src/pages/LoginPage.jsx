@@ -41,23 +41,23 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12 bg-slate-50">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-3.5 sm:px-4 py-8 sm:py-12 bg-slate-50">
       <div className="max-w-md w-full">
         {/* Brand Card Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex w-12 h-12 rounded-2xl bg-indigo-600 items-center justify-center text-white shadow-lg shadow-indigo-200 mb-3">
-            <TrendingUp className="w-6 h-6" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-indigo-600 items-center justify-center text-white shadow-lg shadow-indigo-200 mb-2.5 sm:mb-3">
+            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             Sign in to your account
           </h2>
-          <p className="text-sm text-slate-500 mt-1.5">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Access your spending analytics and AI financial reports
           </p>
         </div>
 
         {/* Card Form */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-md">
+        <div className="bg-white p-5 sm:p-8 rounded-2xl border border-slate-200/80 shadow-md">
           {errorMsg && (
             <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start space-x-2.5 text-rose-800 text-sm">
               <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />

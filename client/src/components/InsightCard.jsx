@@ -42,38 +42,38 @@ export const InsightCard = ({ insight, month, onRegenerate, isGenerating, onOpen
   const flex = data.flexible_analysis;
 
   return (
-    <div className="bg-white rounded-2xl border border-indigo-100 shadow-md overflow-hidden transition-all">
+    <div className="bg-white rounded-2xl border border-indigo-100 shadow-md overflow-hidden transition-all min-w-0">
       {/* Card Header with gradient banner */}
-      <div className="bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 p-6 text-white">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-amber-300 border border-white/20 shadow-inner">
-              <Sparkles className="w-6 h-6 animate-pulse" />
+      <div className="bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 p-4 sm:p-6 text-white">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center space-x-2.5 sm:space-x-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-amber-300 border border-white/20 shadow-inner flex-shrink-0">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-semibold tracking-wider uppercase text-indigo-200">
+                <span className="text-[10px] sm:text-xs font-semibold tracking-wider uppercase text-indigo-200">
                   AI Financial Advisor
                 </span>
-                <span className="bg-indigo-500/40 text-indigo-100 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-400/30">
+                <span className="bg-indigo-500/40 text-indigo-100 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-400/30">
                   Personalized
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white mt-0.5">
+              <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white mt-0.5">
                 {formattedMonth} Financial Analysis
               </h2>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {onOpenChat && (
               <button
                 onClick={onOpenChat}
-                className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 shadow-sm transition-all cursor-pointer"
-                title="Chat directly with Google Gemini about your budget"
+                className="inline-flex items-center px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold text-white bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 shadow-xs transition-all cursor-pointer"
+                title="Chat directly with Gemini"
               >
-                <MessageSquare className="w-3.5 h-3.5 mr-1.5 text-amber-300" />
-                Chat with Gemini
+                <MessageSquare className="w-3.5 h-3.5 mr-1 text-amber-300" />
+                Chat
               </button>
             )}
 
@@ -81,19 +81,19 @@ export const InsightCard = ({ insight, month, onRegenerate, isGenerating, onOpen
               <button
                 onClick={onRegenerate}
                 disabled={isGenerating}
-                className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold text-indigo-900 bg-amber-400 hover:bg-amber-300 shadow-sm transition-all disabled:opacity-50 cursor-pointer"
-                title="Re-run AI analysis with latest expenses and budget settings"
+                className="inline-flex items-center px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold text-indigo-900 bg-amber-400 hover:bg-amber-300 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                title="Re-run AI analysis"
               >
-                <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isGenerating ? 'animate-spin' : ''}`} />
-                {isGenerating ? 'Re-analyzing...' : 'Re-analyze with Latest Data'}
+                <RefreshCw className={`w-3.5 h-3.5 mr-1 ${isGenerating ? 'animate-spin' : ''}`} />
+                {isGenerating ? 'Re-analyzing...' : 'Re-analyze'}
               </button>
             )}
 
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 sm:text-right">
-              <p className="text-xs text-indigo-200 uppercase font-medium">Total Analyzed Spend</p>
-              <p className="text-2xl font-extrabold text-white">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-2.5 sm:p-3 border border-white/20 sm:text-right ml-auto sm:ml-0">
+              <p className="text-[10px] sm:text-xs text-indigo-200 uppercase font-medium">Total Spend</p>
+              <p className="text-lg sm:text-2xl font-extrabold text-white">
                 ₹{Number(data.total_analyzed_amount || 0).toLocaleString('en-IN', {
-                  minimumFractionDigits: 2,
+                  minimumFractionDigits: 0,
                   maximumFractionDigits: 2,
                 })}
               </p>
@@ -102,19 +102,19 @@ export const InsightCard = ({ insight, month, onRegenerate, isGenerating, onOpen
         </div>
       </div>
 
-      <div className="p-6 sm:p-8 space-y-8">
+      <div className="p-4 sm:p-8 space-y-4 sm:space-y-8">
         {/* Dynamic Budget & Spending Plan Section */}
         {flex && (
-          <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200/70">
+          <div className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200/90 space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-2.5 sm:pb-3 border-b border-slate-200/70">
               <div className="flex items-center space-x-2 text-indigo-900">
-                <ShieldCheck className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">
+                <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider">
                   Monthly Budget & Spending Plan
                 </h3>
               </div>
-              <div className="text-xs font-semibold text-slate-500">
-                Day {flex.days_elapsed} elapsed • {flex.days_remaining} days remaining
+              <div className="text-[11px] sm:text-xs font-semibold text-slate-500">
+                Day {flex.days_elapsed} elapsed • {flex.days_remaining} days left
               </div>
             </div>
 

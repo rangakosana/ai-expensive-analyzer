@@ -27,7 +27,7 @@ function App() {
         <AuthProvider>
           <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
             <Navbar />
-            <main className="flex-1">
+            <main className="flex-1 min-w-0">
               <ErrorBoundary>
                 <Routes>
                 {/* Public Routes */}

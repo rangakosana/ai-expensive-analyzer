@@ -7,8 +7,8 @@ export const NotFoundPage = () => {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
-      <div className="max-w-md w-full text-center bg-white p-8 sm:p-12 rounded-2xl border border-slate-200/80 shadow-md">
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-12 sm:py-16">
+      <div className="max-w-md w-full text-center bg-white p-6 sm:p-12 rounded-2xl border border-slate-200/80 shadow-md">
         <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-5 border border-indigo-100">
           <HelpCircle className="w-8 h-8" />
         </div>

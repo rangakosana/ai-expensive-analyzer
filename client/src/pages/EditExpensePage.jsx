@@ -149,24 +149,24 @@ export const EditExpensePage = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-2xl mx-auto px-3.5 sm:px-6 py-4 sm:py-8 min-w-0">
       {/* Back button */}
       <Link
         to="/expenses"
-        className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-800 mb-6 transition-colors"
+        className="inline-flex items-center text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-800 mb-4 sm:mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4 mr-1.5" />
         Back to Expenses
       </Link>
 
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-md p-6 sm:p-8">
-        <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-100">
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-md p-4 sm:p-8">
+        <div className="flex items-center justify-between pb-4 sm:pb-6 mb-4 sm:mb-6 border-b border-slate-100">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-              <Edit2 className="w-5 h-5" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold flex-shrink-0">
+              <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Edit Expense</h1>
+              <h1 className="text-lg sm:text-2xl font-bold text-slate-900">Edit Expense</h1>
               <p className="text-xs sm:text-sm text-slate-500">Modify transaction details</p>
             </div>
           </div>

@@ -103,32 +103,32 @@ export const BudgetModal = ({ isOpen, onClose, onSaveSuccess, currentBudget }) =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-8 animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-4 sm:my-8 animate-fadeIn">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 p-6 text-white flex items-center justify-between">
+        <div className="bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 p-4 sm:p-6 text-white flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-amber-300 border border-white/20 shadow-inner">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-amber-300 border border-white/20 shadow-inner flex-shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xl font-bold tracking-tight">Monthly Budget & Fixed Obligations</h3>
-              <p className="text-xs text-indigo-200 mt-0.5">
-                Separate non-negotiable bills to calculate your true daily flexible spending allowance
+              <h3 className="text-base sm:text-xl font-bold tracking-tight">Monthly Budget & Fixed Bills</h3>
+              <p className="text-[11px] sm:text-xs text-indigo-200 mt-0.5">
+                Protect non-negotiable bills to calculate your safe daily spending allowance
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-indigo-200 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 text-indigo-200 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer flex-shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-[80vh] sm:max-h-[75vh] overflow-y-auto">
           {/* Income & Savings Target Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                 Monthly Income (₹)
@@ -169,9 +169,9 @@ export const BudgetModal = ({ isOpen, onClose, onSaveSuccess, currentBudget }) =
                 className="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg cursor-pointer mt-2"
               />
               <div className="flex justify-between text-[10px] text-slate-400 font-semibold mt-1">
-                <span>0% (No savings)</span>
+                <span>0% (None)</span>
                 <span>20% (Recommended)</span>
-                <span>50% (Aggressive)</span>
+                <span>50% (Max)</span>
               </div>
             </div>
           </div>
@@ -184,72 +184,84 @@ export const BudgetModal = ({ isOpen, onClose, onSaveSuccess, currentBudget }) =
                   <Lock className="w-4 h-4 mr-1.5 text-slate-500" />
                   Fixed & Unavoidable Bills
                 </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  House rent, mobile plans, utilities. <span className="font-semibold text-slate-700">The AI will never advise cutting these.</span>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+                  House rent, mobile plans, utilities. <span className="font-semibold text-slate-700">Protected upfront.</span>
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={handleAddBill}
-                className="inline-flex items-center px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors cursor-pointer"
+                className="inline-flex items-center px-2.5 sm:px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 mr-1" />
-                Add Fixed Bill
+                Add Bill
               </button>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {fixedBills.map((bill, index) => (
                 <div
                   key={bill.id || index}
-                  className="flex items-center gap-2 p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/80"
+                  className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-2"
                 >
-                  <input
-                    type="text"
-                    value={bill.name}
-                    onChange={(e) => handleUpdateBill(index, 'name', e.target.value)}
-                    placeholder="Bill Name (e.g. House Rent)"
-                    className="flex-1 px-3 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-600"
-                    required
-                  />
-
-                  <div className="relative w-32">
-                    <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400 text-xs">
-                      ₹
-                    </span>
+                  <div className="flex items-center gap-2 sm:flex-1">
                     <input
-                      type="number"
-                      min="0"
-                      step="any"
-                      value={bill.amount}
-                      onChange={(e) => handleUpdateBill(index, 'amount', e.target.value)}
-                      placeholder="Amount"
-                      className="w-full pl-6 pr-2.5 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-600 text-right"
+                      type="text"
+                      value={bill.name}
+                      onChange={(e) => handleUpdateBill(index, 'name', e.target.value)}
+                      placeholder="Bill Name (e.g. House Rent)"
+                      className="flex-1 px-3 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-600"
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveBill(index)}
+                      className="sm:hidden p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                      title="Remove bill"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
 
-                  <select
-                    value={bill.category}
-                    onChange={(e) => handleUpdateBill(index, 'category', e.target.value)}
-                    className="w-28 px-2 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:outline-hidden text-slate-700"
-                  >
-                    <option value="Housing">Housing</option>
-                    <option value="Utilities">Utilities</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Transportation">Transportation</option>
-                    <option value="Miscellaneous">Other</option>
-                  </select>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1 sm:w-32">
+                      <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400 text-xs">
+                        ₹
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={bill.amount}
+                        onChange={(e) => handleUpdateBill(index, 'amount', e.target.value)}
+                        placeholder="Amount"
+                        className="w-full pl-6 pr-2.5 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-600 text-right"
+                        required
+                      />
+                    </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveBill(index)}
-                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                    title="Remove bill"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                    <select
+                      value={bill.category}
+                      onChange={(e) => handleUpdateBill(index, 'category', e.target.value)}
+                      className="w-32 sm:w-28 px-2 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-lg focus:outline-hidden text-slate-700"
+                    >
+                      <option value="Housing">Housing</option>
+                      <option value="Utilities">Utilities</option>
+                      <option value="Healthcare">Healthcare</option>
+                      <option value="Transportation">Transportation</option>
+                      <option value="Miscellaneous">Other</option>
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveBill(index)}
+                      className="hidden sm:inline-flex p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                      title="Remove bill"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
 

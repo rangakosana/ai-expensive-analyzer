@@ -211,18 +211,18 @@ export const AddExpensePage = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-2xl mx-auto px-3.5 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6 min-w-0">
       {/* Back button */}
       <Link
         to="/expenses"
-        className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+        className="inline-flex items-center text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
       >
         <ArrowLeft className="w-4 h-4 mr-1.5" />
         Back to Expenses
       </Link>
 
       {/* AI Screenshot & Receipt Scanner Box */}
-      <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900 rounded-3xl p-5 sm:p-6 text-white shadow-xl border border-indigo-700/40 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white shadow-xl border border-indigo-700/40 relative overflow-hidden">
         {/* Glow ambient circle */}
         <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-400/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -389,14 +389,14 @@ export const AddExpensePage = () => {
       </div>
 
       {/* Manual or AI-populated Form Card */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-md p-6 sm:p-8">
-        <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-100">
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-md p-4 sm:p-8">
+        <div className="flex items-center justify-between pb-4 sm:pb-6 mb-4 sm:mb-6 border-b border-slate-100">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-              <PlusCircle className="w-6 h-6" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold flex-shrink-0">
+              <PlusCircle className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Expense Details</h1>
+              <h1 className="text-lg sm:text-2xl font-bold text-slate-900">Expense Details</h1>
               <p className="text-xs sm:text-sm text-slate-500">
                 {scanSuccessMessage ? 'Review your auto-filled details and save' : 'Fill details or let the AI scanner fill them for you'}
               </p>

@@ -102,33 +102,33 @@ export const InsightsPage = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 min-w-0">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center space-x-2">
-            <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 animate-pulse" />
+            <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               AI Financial Advisor
             </h1>
           </div>
-          <p className="text-sm text-slate-500 mt-1">
-            Generate monthly reports powered by Google Gemini to identify waste and receive actionable tips
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Monthly reports powered by Google Gemini to identify waste and receive tips
           </p>
         </div>
 
         {/* Trigger form */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <div className="flex items-center bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
             <button
               onClick={() => handleShiftMonth(-1)}
               title="Previous Month"
-              className="p-2.5 hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <div className="flex items-center px-2.5 py-1.5 space-x-2 border-x border-slate-100">
-              <Calendar className="w-4 h-4 text-slate-400" />
+            <div className="flex items-center px-2 py-1 space-x-1.5 border-x border-slate-100">
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
               <input
                 type="month"
                 value={selectedMonth}
@@ -137,13 +137,13 @@ export const InsightsPage = () => {
                   const existing = pastReports.find((r) => r.report_month === e.target.value);
                   setActiveReport(existing || null);
                 }}
-                className="text-sm font-semibold text-slate-700 bg-transparent border-none focus:outline-hidden cursor-pointer"
+                className="text-xs sm:text-sm font-semibold text-slate-700 bg-transparent border-none focus:outline-hidden cursor-pointer"
               />
             </div>
             <button
               onClick={() => handleShiftMonth(1)}
               title="Next Month"
-              className="p-2.5 hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -152,44 +152,44 @@ export const InsightsPage = () => {
           <button
             type="button"
             onClick={() => setIsChatOpen(true)}
-            className="inline-flex items-center px-3.5 py-2.5 text-xs font-bold rounded-xl text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 transition-colors shadow-2xs cursor-pointer"
-            title="Chat directly with Google Gemini about your expenses"
+            className="inline-flex items-center px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs font-bold rounded-xl text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 transition-colors shadow-2xs cursor-pointer"
+            title="Chat with Gemini"
           >
-            <MessageSquare className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
-            Chat with Gemini
+            <MessageSquare className="w-3.5 h-3.5 mr-1 text-indigo-600" />
+            Chat
           </button>
 
           <button
             type="button"
             onClick={() => setIsBudgetModalOpen(true)}
-            className="inline-flex items-center px-3.5 py-2.5 text-xs font-bold rounded-xl text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
-            title="Configure monthly income and non-negotiable fixed bills"
+            className="inline-flex items-center px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs font-bold rounded-xl text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+            title="Adjust Budget & Fixed Bills"
           >
-            <Settings className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
-            Adjust Budget & Fixed Bills
+            <Settings className="w-3.5 h-3.5 mr-1 text-slate-500" />
+            Budget Settings
           </button>
 
           <button
             onClick={handleGenerateReport}
             disabled={generating}
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-md shadow-indigo-100 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-xs shadow-indigo-100 transition-all disabled:opacity-60 disabled:cursor-not-allowed ml-auto sm:ml-0"
           >
             {generating ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin text-amber-300" />
-                Analyzing with Gemini...
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin text-amber-300" />
+                Analyzing...
               </>
             ) : (
               <>
                 {activeReport && activeReport.report_month === selectedMonth ? (
                   <>
-                    <RefreshCw className="w-4 h-4 mr-2 text-amber-300" />
-                    Re-analyze with Latest Data
+                    <RefreshCw className="w-3.5 h-3.5 mr-1.5 text-amber-300" />
+                    Re-analyze
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 mr-2 text-amber-300" />
-                    Analyze {selectedMonth}
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5 text-amber-300" />
+                    Analyze
                   </>
                 )}
               </>

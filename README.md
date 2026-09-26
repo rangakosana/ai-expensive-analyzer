@@ -6,14 +6,17 @@ A production-grade, full-stack web application designed to help individuals trac
 
 ## 🌟 Key Features
 
-* **🔐 Secure User Authentication:** Registration, login, password hashing with `bcrypt` (10 rounds), and JWT-based session authorization with 24-hour expiration.
-* **📊 Interactive Financial Dashboard:** Real-time metrics (Total Spend, Top Category, Total Transactions, Average Spend / Day), spending by category chart with Pie/Donut and Bar chart toggles, and recent transactions.
-* **💳 Complete Expense Management (CRUD):** Create, read, update, and delete expenses with full field validation.
+* **🔐 Secure User Authentication:** Registration, login, password hashing with `bcrypt` (10 rounds), role-based access control (`user` vs `admin`), and JWT-based session authorization with 24-hour expiration.
+* **📸 Multimodal AI Receipt Scanner (Gemini Vision):** Upload or snap photos of physical paper receipts; Gemini 2.5 Flash automatically extracts merchant name, date, total amount, and categorizes the purchase instantly into form inputs.
+* **💬 Interactive AI Financial Assistant:** Context-aware chatbot powered by Gemini 2.5 Flash with full conversation history, suggested starter prompts, financial advisory capabilities, and real-time transaction understanding.
+* **🎯 Dynamic Budget Pacing Engine:** Configure monthly income, savings targets, and fixed commitments. Real-time calculation of **Safe Daily Limit**, remaining spendable cash, and daily spending velocity indicator.
+* **📅 Interactive Spending Calendar & Heatmap:** Monthly calendar view color-coded by daily spending intensity, with instant date inspection showing all transactions for any selected day.
+* **📊 Interactive Financial Dashboard:** Real-time metrics (Total Spend, Top Category, Total Transactions, Average Spend / Day), interactive Recharts Donut & Bar chart visualizations, and quick daily spending strips.
+* **💳 Complete Expense Management (CRUD):** Create, read, update, and delete expenses with full Zod validation and receipt image support.
 * **🔍 Search & Multi-Filter:** Filter expenses by month, category enum, and live search by merchant name or notes.
-* **🤖 AI Financial Advisor (Google Gemini):** Bundles monthly expenses in the backend and queries Gemini using strict system instructions to generate a structured financial health report with detected waste and 3 actionable tips.
-* **📜 AI Insight History:** Persists all generated AI reports into PostgreSQL (`JSONB`), allowing users to revisit past months' financial analyses anytime.
-* **🛡️ Row-Level Data Isolation:** Strict backend authorization ensuring users can only read, modify, or delete their own data (`WHERE user_id = $X`). Under no circumstances is `user_id` accepted from the client.
-* **📱 Responsive Mobile-First UI:** Built with React (Vite), Tailwind CSS, Lucide React icons, loading skeletons, and interactive alert toasts.
+* **🤖 Monthly AI Financial Advisor:** Analyzes full monthly spending patterns, pinpoints micro-overspending, and delivers 3 high-impact actionable habits.
+* **🛡️ Row-Level Data Isolation & Admin Panel:** Strict backend authorization ensuring users can only access their own records. Admin panel allows user auditing, role toggles, password resets, and transaction inspection.
+* **📱 Responsive Mobile-First Redesign:** 2×2 metric grids, dual-view responsive data cards/tables, zero horizontal overflow, and touch-optimized navigation.
 
 ---
 
@@ -212,16 +215,25 @@ The test suite validates:
 | --- | --- | --- | --- |
 | `POST` | `/api/auth/register` | Public | Register new account (`{name, email, password}`) |
 | `POST` | `/api/auth/login` | Public | Login with credentials (`{email, password}`) |
-| `GET` | `/api/auth/me` | Bearer Token | Fetch current authenticated user |
+| `GET` | `/api/auth/me` | Bearer Token | Fetch current authenticated user & role |
 | `GET` | `/api/expenses` | Bearer Token | List expenses with optional `?month=YYYY-MM`, `?category=...`, `?search=...` |
 | `GET` | `/api/expenses/summary` | Bearer Token | Aggregated stats (total spent, category breakdown, recent 5) |
 | `GET` | `/api/expenses/:id` | Bearer Token | Fetch expense by ID (enforces user ownership) |
 | `POST` | `/api/expenses` | Bearer Token | Create new expense |
+| `POST` | `/api/expenses/scan-receipt` | Bearer Token | Multimodal Gemini Vision receipt OCR & categorization |
 | `PUT` | `/api/expenses/:id` | Bearer Token | Update existing expense |
 | `DELETE` | `/api/expenses/:id` | Bearer Token | Delete expense record |
+| `GET` | `/api/budget` | Bearer Token | Fetch user's budget settings & pacing calculation |
+| `POST` | `/api/budget` | Bearer Token | Update monthly income, savings goal, & fixed bills |
+| `GET` | `/api/chat/history` | Bearer Token | List AI conversation threads |
+| `POST` | `/api/chat` | Bearer Token | Send message to Gemini AI Financial Assistant |
 | `GET` | `/api/insights` | Bearer Token | List all saved AI monthly reports |
 | `GET` | `/api/insights/:month` | Bearer Token | Get AI report for specific month |
 | `POST` | `/api/insights/generate` | Bearer Token | Query Gemini to analyze month (`{month: "YYYY-MM"}`) |
+| `GET` | `/api/admin/users` | Admin Only | List all registered users with spending summaries |
+| `PUT` | `/api/admin/users/:id/role` | Admin Only | Toggle user role (`user` / `admin`) |
+| `POST` | `/api/admin/users/:id/reset-password` | Admin Only | Reset a user's password |
+| `DELETE` | `/api/admin/users/:id` | Admin Only | Delete user account and cascade data |
 | `GET` | `/api/health` | Public | System status and database connectivity |
 
 ---

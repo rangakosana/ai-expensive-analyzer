@@ -80,50 +80,50 @@ export const CategoryChart = ({ data = [] }) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-base font-bold text-slate-900">Spending by Category</h3>
-          <p className="text-xs text-slate-500">Distribution of expenditures this month</p>
+    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs min-w-0 overflow-hidden">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+        <div className="min-w-0">
+          <h3 className="text-sm sm:text-base font-bold text-slate-900 truncate">Spending by Category</h3>
+          <p className="text-[11px] sm:text-xs text-slate-500 truncate">Expenditure breakdown</p>
         </div>
 
         {/* View toggle */}
-        <div className="flex items-center p-1 bg-slate-100 rounded-lg space-x-1">
+        <div className="flex items-center p-1 bg-slate-100 rounded-lg space-x-1 flex-shrink-0">
           <button
             onClick={() => setChartType('pie')}
             className={`p-1.5 rounded-md text-xs font-medium transition-colors ${
               chartType === 'pie'
-                ? 'bg-white text-indigo-600 shadow-sm'
+                ? 'bg-white text-indigo-600 shadow-xs'
                 : 'text-slate-500 hover:text-slate-800'
             }`}
             title="Pie chart view"
           >
-            <PieIcon className="w-4 h-4" />
+            <PieIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
           <button
             onClick={() => setChartType('bar')}
             className={`p-1.5 rounded-md text-xs font-medium transition-colors ${
               chartType === 'bar'
-                ? 'bg-white text-indigo-600 shadow-sm'
+                ? 'bg-white text-indigo-600 shadow-xs'
                 : 'text-slate-500 hover:text-slate-800'
             }`}
             title="Bar chart view"
           >
-            <BarChart3 className="w-4 h-4" />
+            <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>
 
-      <div className="h-[280px] w-full">
+      <div className="h-[240px] sm:h-[280px] w-full min-w-0 overflow-hidden">
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'pie' ? (
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={95}
+                cy="46%"
+                innerRadius={45}
+                outerRadius={75}
                 paddingAngle={3}
                 dataKey="value"
               >
@@ -134,22 +134,22 @@ export const CategoryChart = ({ data = [] }) => {
               <Tooltip content={<CustomTooltip />} />
               <Legend
                 verticalAlign="bottom"
-                height={36}
-                formatter={(val) => <span className="text-xs text-slate-600">{val}</span>}
+                height={40}
+                formatter={(val) => <span className="text-[11px] sm:text-xs text-slate-600">{val}</span>}
               />
             </PieChart>
           ) : (
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 25 }}>
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11, fill: '#64748b' }}
+                tick={{ fontSize: 10, fill: '#64748b' }}
                 interval={0}
                 angle={-25}
                 textAnchor="end"
               />
               <YAxis
-                tick={{ fontSize: 11, fill: '#64748b' }}
+                tick={{ fontSize: 10, fill: '#64748b' }}
                 tickFormatter={(val) => `₹${val}`}
               />
               <Tooltip content={<CustomTooltip />} />

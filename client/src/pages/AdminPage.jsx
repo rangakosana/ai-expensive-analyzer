@@ -164,32 +164,32 @@ export const AdminPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 min-w-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 sm:pb-6 border-b border-slate-200">
         <div>
-          <div className="flex items-center space-x-2.5 mb-1.5">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
-              <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+          <div className="flex items-center space-x-2 mb-1">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+              <ShieldCheck className="w-3 h-3 mr-1" />
               SUPER ADMIN
             </span>
-            <span className="text-xs text-slate-500">Platform Control Center</span>
+            <span className="text-xs text-slate-500">Platform Control</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             Administrator Dashboard
           </h1>
-          <p className="text-sm text-slate-600 mt-1">
-            Manage registered users, inspect expense records across accounts, and oversee platform analytics.
+          <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+            Manage registered accounts and oversee platform volume
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 self-start sm:self-auto">
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="inline-flex items-center px-3.5 py-2 text-sm font-medium rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-sm transition-colors disabled:opacity-50"
+            className="inline-flex items-center px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-medium rounded-xl text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-xs transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh Data
           </button>
         </div>
@@ -197,65 +197,65 @@ export const AdminPage = () => {
 
       {/* Overview Stat Cards */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
+          <div className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
+            <div className="flex items-start justify-between gap-1.5">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
                   Total Users
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">{stats.totalUsers}</p>
-                <p className="text-xs text-slate-500 mt-1">Registered accounts</p>
+                <p className="text-lg sm:text-2xl font-bold text-slate-900 mt-0.5 sm:mt-1 truncate">{stats.totalUsers}</p>
+                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">Registered</p>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-                <Users className="w-6 h-6" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 flex-shrink-0">
+                <Users className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <div className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
+            <div className="flex items-start justify-between gap-1.5">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
                   Total Expenses
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">{stats.totalExpenses}</p>
-                <p className="text-xs text-slate-500 mt-1">Across all accounts</p>
+                <p className="text-lg sm:text-2xl font-bold text-slate-900 mt-0.5 sm:mt-1 truncate">{stats.totalExpenses}</p>
+                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">Platform records</p>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-                <Receipt className="w-6 h-6" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
+                <Receipt className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <div className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
+            <div className="flex items-start justify-between gap-1.5">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
                   Platform Volume
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">
-                  ₹{stats.totalVolume.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                <p className="text-lg sm:text-2xl font-bold text-slate-900 mt-0.5 sm:mt-1 truncate">
+                  ₹{stats.totalVolume.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">Total recorded spend</p>
+                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">Total spend</p>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-600">
-                <IndianRupee className="w-6 h-6" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-600 flex-shrink-0">
+                <IndianRupee className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <div className="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
+            <div className="flex items-start justify-between gap-1.5">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
                   Active Budgets
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">{stats.totalBudgets}</p>
-                <p className="text-xs text-slate-500 mt-1">Configured monthly plans</p>
+                <p className="text-lg sm:text-2xl font-bold text-slate-900 mt-0.5 sm:mt-1 truncate">{stats.totalBudgets}</p>
+                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">Configured</p>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-                <Activity className="w-6 h-6" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0">
+                <Activity className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
             </div>
           </div>
@@ -322,8 +322,121 @@ export const AdminPage = () => {
           </div>
         </div>
 
-        {/* Users Table */}
-        <div className="overflow-x-auto">
+        {/* Mobile View: Touch-Friendly User Cards */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {filteredUsers.length === 0 ? (
+            <div className="p-8 text-center text-slate-500 text-sm">
+              No users found matching your search.
+            </div>
+          ) : (
+            filteredUsers.map((u) => {
+              const isCurrent = u.id === currentUser?.id;
+              const isAdmin = u.role === 'admin';
+
+              return (
+                <div key={u.id} className="p-3.5 space-y-3">
+                  {/* Top row: Avatar, Name, Email, Role */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center space-x-2.5 min-w-0">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                        {u.name ? u.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-slate-900 truncate flex items-center gap-1.5">
+                          <span className="truncate">{u.name}</span>
+                          {isCurrent && (
+                            <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium border border-slate-200 shrink-0">
+                              You
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-slate-500 truncate">{u.email}</div>
+                      </div>
+                    </div>
+                    <div>
+                      {isAdmin ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-100 text-purple-800 border border-purple-200 shrink-0">
+                          <Shield className="w-3 h-3 mr-1" />
+                          Admin
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
+                          User
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Metrics Row: Spent, Entries, Budget */}
+                  <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center">
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Spent</p>
+                      <p className="text-xs font-bold text-slate-900 truncate">
+                        ₹{Math.round(u.total_spent).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Entries</p>
+                      <p className="text-xs font-bold text-slate-700">{u.expense_count}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Budget</p>
+                      <p className="text-xs font-bold text-emerald-700 truncate">
+                        {u.budget_income ? `₹${Math.round(u.budget_income).toLocaleString('en-IN')}` : '—'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Footer Row: Joined date + Actions */}
+                  <div className="flex items-center justify-between pt-0.5 text-xs">
+                    <span className="text-slate-400 text-[11px]">
+                      Joined {new Date(u.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                    <div className="flex items-center space-x-1.5">
+                      <button
+                        onClick={() => handleOpenExpenses(u)}
+                        title="Inspect Expenses"
+                        className="p-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg border border-slate-200 transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setPasswordModalUser(u)}
+                        title="Reset Password"
+                        className="p-1.5 text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg border border-slate-200 transition-colors"
+                      >
+                        <Key className="w-3.5 h-3.5" />
+                      </button>
+                      {!isCurrent && (
+                        <button
+                          onClick={() => handleToggleRole(u)}
+                          title={isAdmin ? 'Revoke Admin' : 'Make Admin'}
+                          className={`p-1.5 rounded-lg border border-slate-200 transition-colors ${
+                            isAdmin ? 'text-purple-600 hover:bg-purple-50' : 'text-slate-500 hover:text-purple-600 hover:bg-purple-50'
+                          }`}
+                        >
+                          <Shield className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      {!isCurrent && (
+                        <button
+                          onClick={() => setDeleteModalUser(u)}
+                          title="Delete Account"
+                          className="p-1.5 text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-100 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
@@ -511,7 +624,7 @@ export const AdminPage = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 max-h-[60vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 max-h-[60vh] overflow-y-auto">
               {loadingExpenses ? (
                 <div className="py-12 flex justify-center">
                   <LoadingSpinner size="md" text="Fetching transactions..." />
@@ -522,7 +635,7 @@ export const AdminPage = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
                     <span>Total Transactions: <strong>{userExpenses.length}</strong></span>
                     <span>
                       Total Spent:{' '}
@@ -535,7 +648,8 @@ export const AdminPage = () => {
                     </span>
                   </div>
 
-                  <table className="min-w-full divide-y divide-slate-200">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-slate-200">
                     <thead className="bg-slate-50">
                       <tr>
                         <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Date</th>
@@ -573,6 +687,7 @@ export const AdminPage = () => {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               )}
             </div>
