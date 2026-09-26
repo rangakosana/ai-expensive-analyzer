@@ -106,18 +106,26 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const abortControllerRef = useRef(null);
+  const lastUserIdRef = useRef(user?.id);
 
-  // Sync sessions to localStorage
+  // Sync sessions to localStorage ONLY for active user (prevents race condition when switching users)
   useEffect(() => {
+    if (lastUserIdRef.current !== user?.id) {
+      return;
+    }
+    if (!user?.id && storageKey !== 'gemini_financial_chat_sessions_guest') {
+      return;
+    }
     try {
       localStorage.setItem(storageKey, JSON.stringify(sessions));
     } catch (e) {
       console.warn('Failed to save sessions to localStorage:', e);
     }
-  }, [sessions, storageKey]);
+  }, [sessions, storageKey, user?.id]);
 
   // When user switches or logs in/out, re-hydrate sessions strictly for active user
   useEffect(() => {
+    lastUserIdRef.current = user?.id;
     try {
       localStorage.removeItem('gemini_financial_chat_sessions_v1');
       const saved = localStorage.getItem(storageKey);
@@ -142,7 +150,7 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
     const defaultSess = [createDefaultSession(month, user?.name)];
     setSessions(defaultSess);
     setActiveSessionId(defaultSess[0].id);
-  }, [storageKey, month, user?.email, user?.name]);
+  }, [storageKey, month, user?.email, user?.name, user?.id]);
 
   // Focus input on open or session switch
   useEffect(() => {
