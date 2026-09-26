@@ -16,15 +16,17 @@ import {
   Clock,
 } from 'lucide-react';
 import { insightService } from '../services/api.js';
+import { useAuth } from '../context/AuthContext.jsx';
 
 const QUICK_QUESTIONS = [
   'How can I protect my savings this month?',
-  'Why did my budget reach 107%?',
-  'Can I afford to spend ₹100 more this week?',
+  'Can I afford a weekend trip or large purchase?',
+  'Where am I spending the most money?',
   'Give me 3 practical ways to reduce spending.',
 ];
 
-const STORAGE_KEY = 'gemini_financial_chat_sessions_v1';
+const getStorageKey = (userId) =>
+  userId ? `gemini_financial_chat_sessions_${userId}` : 'gemini_financial_chat_sessions_guest';
 
 const createDefaultSession = (month) => {
   const id = 'session_' + Date.now();
@@ -45,10 +47,14 @@ const createDefaultSession = (month) => {
 };
 
 export const GeminiChatModal = ({ isOpen, onClose, month }) => {
+  const { user } = useAuth();
+  const storageKey = getStorageKey(user?.id);
+
   // Session storage state
   const [sessions, setSessions] = useState(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const userKey = getStorageKey(user?.id);
+      const saved = localStorage.getItem(userKey) || localStorage.getItem('gemini_financial_chat_sessions_v1');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -82,11 +88,31 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
   // Sync sessions to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+      localStorage.setItem(storageKey, JSON.stringify(sessions));
     } catch (e) {
       console.warn('Failed to save sessions to localStorage:', e);
     }
-  }, [sessions]);
+  }, [sessions, storageKey]);
+
+  // When user switches, re-hydrate sessions for the active user
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSessions(parsed);
+          setActiveSessionId(parsed[0]?.id || 'session_default');
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load user chat sessions:', e);
+    }
+    const defaultSess = [createDefaultSession(month)];
+    setSessions(defaultSess);
+    setActiveSessionId(defaultSess[0].id);
+  }, [storageKey, month]);
 
   // Focus input on open or session switch
   useEffect(() => {

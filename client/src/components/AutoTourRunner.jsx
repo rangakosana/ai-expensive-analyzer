@@ -74,12 +74,12 @@ export const AutoTourRunner = () => {
   const recordedChunksRef = useRef([]);
   const streamRef = useRef(null);
 
-  // 60-Second Professional Employee Storyboard - Synchronized with Audio Down to Milliseconds
+  // 50-Second Professional In-App Storyboard - Synchronized with Daniel's Voiceover
   const steps = [
     {
-      id: 'scene1_intro_dashboard',
-      duration: 15.5,
-      title: 'Scene 1: Arjun Sharma - Financial Dilemma & Dashboard Clarity',
+      id: 'scene1_clarity_intro',
+      duration: 6.5,
+      title: 'Scene 1: Confusion into Clarity - AI Expense Analyzer',
       route: '/dashboard',
       action: () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -87,7 +87,7 @@ export const AutoTourRunner = () => {
     },
     {
       id: 'scene2_pacing_charts',
-      duration: 12.5,
+      duration: 13.5,
       title: 'Scene 2: Safe Daily Limit & Budget Pacing Recharts',
       route: '/dashboard',
       action: () => {
@@ -96,18 +96,18 @@ export const AutoTourRunner = () => {
     },
     {
       id: 'scene3_calendar_receipts',
-      duration: 8.0,
+      duration: 9.0,
       title: 'Scene 3: Calendar Heatmap & Itemized Receipts',
       route: '/calendar',
       action: () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        // Voice speaks "Tap any date..." at 30.8s (2.8s into this scene)
+        // Voice speaks "Tap any date..." at ~23.0s (3.0s into this scene)
         setTimeout(() => {
           const dayButtons = document.querySelectorAll('button[class*="min-h-"]');
           if (dayButtons.length > 5) {
             dayButtons[5].click(); // click Day 6 Petrol refill
           }
-        }, 2800);
+        }, 3000);
       },
     },
     {
@@ -117,7 +117,7 @@ export const AutoTourRunner = () => {
       route: '/insights',
       action: () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        // Voice speaks "like whether I can afford a weekend trip..." at 37.5s (1.5s into this scene)
+        // Voice speaks "like whether I can afford a weekend trip..." at ~30.5s (1.5s into this scene)
         setTimeout(() => {
           const chatButton = document.querySelector('button[title*="Chat"], button:has(svg.lucide-sparkles)');
           if (chatButton) chatButton.click();
@@ -131,15 +131,20 @@ export const AutoTourRunner = () => {
       },
     },
     {
-      id: 'scene5_get_started_page',
-      duration: 11.0,
-      title: 'Scene 5: Get Started with AI Expense Analyzer',
+      id: 'scene5_get_started_finale',
+      duration: 8.0,
+      title: 'Scene 5: AI Expense Analyzer Application Frame',
       route: '/',
       action: () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(() => {
-          window.scrollTo({ top: 120, behavior: 'smooth' });
-        }, 1800);
+          const frame = document.getElementById('application-showcase-frame');
+          if (frame) {
+            frame.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else {
+            window.scrollTo({ top: 180, behavior: 'smooth' });
+          }
+        }, 800);
       },
     },
   ];
@@ -203,8 +208,11 @@ export const AutoTourRunner = () => {
   // Initialize Arjun Sharma's Profile & Chat Data
   const prepareProfessionalSession = async () => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(SEEDED_CHAT_SESSIONS));
-      await login('arjun.sharma@techcorp.io', 'Password123!');
+      const loggedUser = await login('arjun.sharma@techcorp.io', 'Password123!');
+      if (loggedUser?.id) {
+        localStorage.setItem(`gemini_financial_chat_sessions_${loggedUser.id}`, JSON.stringify(SEEDED_CHAT_SESSIONS));
+      }
+      localStorage.setItem('gemini_financial_chat_sessions_v1', JSON.stringify(SEEDED_CHAT_SESSIONS));
     } catch (err) {
       console.warn('Professional login fallback:', err);
     }
@@ -326,10 +334,10 @@ export const AutoTourRunner = () => {
             <button
               onClick={startRecordingAndTour}
               className="flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs transition-transform hover:scale-105 cursor-pointer shadow-lg shadow-indigo-900/40"
-              title="Record tab video with Arjun Sharma profile & studio voiceover silently in class"
+              title="Record in-app walkthrough with Arjun Sharma profile & strong male voiceover silently in class"
             >
               <Video className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-              <span>Record 1-Min Video (Arjun Sharma Showcase)</span>
+              <span>Record In-App Demo (50s Male Voiceover)</span>
             </button>
 
             {/* Secondary Action: Visual Tour Only */}
@@ -363,7 +371,7 @@ export const AutoTourRunner = () => {
         <div className="fixed top-3 right-3 z-50 animate-in fade-in duration-300">
           <div className="flex items-center space-x-2 bg-slate-900/80 backdrop-blur-xs text-white px-2.5 py-1 rounded-full border border-slate-700/60 shadow-lg text-[10px] font-mono">
             <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-            <span>{elapsedSeconds}s / 60s</span>
+            <span>{elapsedSeconds}s / 50s</span>
             <button
               onClick={stopTour}
               className="hover:text-rose-400 ml-1 p-0.5 cursor-pointer"
