@@ -33,7 +33,9 @@ export const BudgetPacingCard = ({
   const currentDay = isCurrentMonth ? Math.min(now.getDate(), daysInMonth) : daysInMonth;
   const daysRemaining = Math.max(0, daysInMonth - currentDay);
 
-  const fixedBills = Array.isArray(budget?.fixed_bills) ? budget.fixed_bills : [];
+  const fixedBills = useMemo(() => {
+    return Array.isArray(budget?.fixed_bills) ? budget.fixed_bills : [];
+  }, [budget?.fixed_bills]);
 
   // Categorize actual expenses into Fixed vs Flexible (Hook MUST execute unconditionally at top level)
   const { fixedSpent, flexibleSpent, flexibleExpenses } = useMemo(() => {

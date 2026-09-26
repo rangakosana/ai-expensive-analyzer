@@ -140,7 +140,7 @@ export const GeminiChatModal = ({ isOpen, onClose, month }) => {
     return sessions.find((s) => s.id === activeSessionId) || sessions[0] || createDefaultSession(month);
   }, [sessions, activeSessionId, month]);
 
-  const messages = currentSession?.messages || [];
+  const messages = useMemo(() => currentSession?.messages || [], [currentSession?.messages]);
 
   // Scroll to bottom on messages change
   useEffect(() => {

@@ -62,7 +62,7 @@ export const DashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedMonth, user?.id, toastError]);
+  }, [selectedMonth, toastError]);
 
   useEffect(() => {
     fetchDashboardData();

@@ -59,7 +59,7 @@ export const CalendarPage = () => {
   const navigate = useNavigate();
   const { success: toastSuccess, error: toastError } = useToast();
 
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const currentMonthStr = todayStr.slice(0, 7);
 
@@ -91,7 +91,7 @@ export const CalendarPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedMonth, user?.id, toastError]);
+  }, [selectedMonth, toastError]);
 
   useEffect(() => {
     fetchMonthExpenses();

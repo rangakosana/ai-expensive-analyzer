@@ -45,7 +45,7 @@ export const AdminPage = () => {
   const [deleteModalUser, setDeleteModalUser] = useState(null);
   const [deletingUser, setDeletingUser] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [statsRes, usersRes] = await Promise.all([
         adminService.getStats(),
@@ -60,11 +60,11 @@ export const AdminPage = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [toastError]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleRefresh = () => {
     setRefreshing(true);

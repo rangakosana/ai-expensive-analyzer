@@ -61,7 +61,7 @@ export const InsightsPage = () => {
     } finally {
       setLoadingHistory(false);
     }
-  }, [selectedMonth, user?.id]);
+  }, [selectedMonth]);
 
   useEffect(() => {
     fetchReports();

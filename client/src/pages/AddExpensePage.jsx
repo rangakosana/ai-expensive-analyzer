@@ -57,27 +57,7 @@ export const AddExpensePage = () => {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
 
-  // Listen for Clipboard Paste (Cmd+V / Ctrl+V)
-  useEffect(() => {
-    const handlePaste = (e) => {
-      if (!e.clipboardData) return;
-      const items = e.clipboardData.items;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const file = items[i].getAsFile();
-          if (file) {
-            processImageFile(file);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener('paste', handlePaste);
-    return () => window.removeEventListener('paste', handlePaste);
-  }, []);
-
-  const processImageFile = async (file) => {
+  const processImageFile = useCallback(async (file) => {
     if (!file || !file.type.startsWith('image/')) {
       toastError('Please select a valid image file (PNG, JPG, WEBP).');
       return;
@@ -140,7 +120,27 @@ export const AddExpensePage = () => {
     };
 
     reader.readAsDataURL(file);
-  };
+  }, [toastError, success]);
+
+  // Listen for Clipboard Paste (Cmd+V / Ctrl+V)
+  useEffect(() => {
+    const handlePaste = (e) => {
+      if (!e.clipboardData) return;
+      const items = e.clipboardData.items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            processImageFile(file);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [processImageFile]);
 
   const handleDrop = (e) => {
     e.preventDefault();
