@@ -45,6 +45,8 @@ app.use('/api/admin', adminRoutes);
 
 // In production, serve static frontend assets
 const clientDistPath = path.join(__dirname, '../client/dist');
+const clientPublicPath = path.join(__dirname, '../client/public');
+app.use(express.static(clientPublicPath));
 app.use(express.static(clientDistPath));
 
 // API 404 handler for unrecognized /api routes
