@@ -20,8 +20,10 @@ import { LoadingSpinner } from '../components/LoadingSpinner.jsx';
 import { BudgetModal } from '../components/BudgetModal.jsx';
 import { GeminiChatModal } from '../components/GeminiChatModal.jsx';
 import { useToast } from '../components/Toast.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export const InsightsPage = () => {
+  const { user } = useAuth();
   const currentMonthStr = new Date().toISOString().slice(0, 7);
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
   const [pastReports, setPastReports] = useState([]);
@@ -59,7 +61,7 @@ export const InsightsPage = () => {
     } finally {
       setLoadingHistory(false);
     }
-  }, [selectedMonth]);
+  }, [selectedMonth, user?.id]);
 
   useEffect(() => {
     fetchReports();

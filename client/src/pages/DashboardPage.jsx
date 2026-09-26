@@ -22,8 +22,10 @@ import { DailySpendingStrip } from '../components/DailySpendingStrip.jsx';
 import { BudgetPacingCard } from '../components/BudgetPacingCard.jsx';
 import { BudgetModal } from '../components/BudgetModal.jsx';
 import { useToast } from '../components/Toast.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export const DashboardPage = () => {
+  const { user } = useAuth();
   // Current month in YYYY-MM
   const currentMonthStr = new Date().toISOString().slice(0, 7);
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
@@ -57,7 +59,7 @@ export const DashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedMonth, toastError]);
+  }, [selectedMonth, user?.id, toastError]);
 
   useEffect(() => {
     fetchDashboardData();

@@ -7,6 +7,7 @@ import {
   Video,
   Download,
   CheckCircle2,
+  UserCheck,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -332,6 +333,19 @@ export const AutoTourRunner = () => {
             >
               <Play className="w-3 h-3 text-amber-300 fill-current" />
               <span>Tour Only</span>
+            </button>
+
+            {/* Quick Switch to Showcase Account */}
+            <button
+              onClick={async () => {
+                await prepareProfessionalSession();
+                navigate('/dashboard');
+              }}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full hover:bg-slate-800 text-emerald-300 text-xs font-medium transition-colors cursor-pointer border border-emerald-500/30"
+              title="Instantly switch active login to Arjun Sharma"
+            >
+              <UserCheck className="w-3 h-3 text-emerald-400" />
+              <span>Switch to Arjun</span>
             </button>
           </div>
         </div>

@@ -21,6 +21,7 @@ import {
 import { expenseService } from '../services/api.js';
 import { useToast } from '../components/Toast.jsx';
 import { LoadingSpinner } from '../components/LoadingSpinner.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -54,6 +55,7 @@ const CATEGORY_DOT_COLORS = {
 };
 
 export const CalendarPage = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { success: toastSuccess, error: toastError } = useToast();
 
@@ -89,7 +91,7 @@ export const CalendarPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedMonth, toastError]);
+  }, [selectedMonth, user?.id, toastError]);
 
   useEffect(() => {
     fetchMonthExpenses();
