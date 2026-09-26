@@ -19,6 +19,7 @@ import { NotFoundPage } from './pages/NotFoundPage.jsx';
 import { AdminRoute } from './components/AdminRoute.jsx';
 
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
+import { AutoTourRunner } from './components/AutoTourRunner.jsx';
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
               </Routes>
             </ErrorBoundary>
           </main>
+          <AutoTourRunner />
           </div>
         </AuthProvider>
       </ToastProvider>
