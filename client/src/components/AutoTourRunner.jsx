@@ -10,6 +10,50 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
+const STORAGE_KEY = 'gemini_financial_chat_sessions_v1';
+
+// Seeded Gemini Doubts & Conversations for Arjun Sharma
+const SEEDED_CHAT_SESSIONS = [
+  {
+    id: 'session_goa_trip',
+    title: 'Can I afford a Goa trip this month?',
+    createdAt: '2026-09-24T10:30:00.000Z',
+    updatedAt: '2026-09-24T10:32:00.000Z',
+    month: '2026-09',
+    messages: [
+      {
+        role: 'user',
+        text: 'Can I afford a weekend getaway to Goa with my remaining September budget?',
+        timestamp: '2026-09-24T10:30:00.000Z',
+      },
+      {
+        role: 'model',
+        text: 'Yes, Arjun! Based on your September budget (₹85,000 income, ₹27,000 fixed bills), you have a healthy spendable cushion of ₹16,500 remaining with a Safe Daily Limit of ₹1,650/day. A ₹12,000 weekend trip is completely feasible if you allocate ₹3,500 from your dining buffer, all while 100% protecting your ₹17,000 monthly savings goal.',
+        timestamp: '2026-09-24T10:30:03.000Z',
+      },
+    ],
+  },
+  {
+    id: 'session_dining_cut',
+    title: 'Cut 15% from dining',
+    createdAt: '2026-09-20T14:15:00.000Z',
+    updatedAt: '2026-09-20T14:17:00.000Z',
+    month: '2026-09',
+    messages: [
+      {
+        role: 'user',
+        text: 'How can I cut 15% on dining out without affecting my client meetings?',
+        timestamp: '2026-09-20T14:15:00.000Z',
+      },
+      {
+        role: 'model',
+        text: 'You have spent ₹5,250 across cafe visits and dinner deliveries. Capping personal afternoon coffee runs to twice a week preserves ₹1,400 monthly with zero impact on professional meetings.',
+        timestamp: '2026-09-20T14:15:03.000Z',
+      },
+    ],
+  },
+];
+
 export const AutoTourRunner = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -19,7 +63,7 @@ export const AutoTourRunner = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isAuthenticated } = useAuth();
+  const { login } = useAuth();
   const timerRef = useRef(null);
   const stepTimeoutRef = useRef(null);
 
@@ -29,12 +73,12 @@ export const AutoTourRunner = () => {
   const recordedChunksRef = useRef([]);
   const streamRef = useRef(null);
 
-  // 60-Second Cinematic Storyboard
+  // 60-Second Professional Employee Storyboard
   const steps = [
     {
       id: 'scene1_dashboard_clarity',
       duration: 13,
-      title: 'Scene 1: From Blankness to Total Clarity',
+      title: 'Scene 1: Arjun Sharma - Dashboard & Safe Daily Limit',
       route: '/dashboard',
       action: () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -43,7 +87,7 @@ export const AutoTourRunner = () => {
     {
       id: 'scene2_visual_breakdown',
       duration: 12,
-      title: 'Scene 2: Dynamic Budget Pacing & Visual Charts',
+      title: 'Scene 2: Dynamic Budget Pacing & Recharts',
       route: '/dashboard',
       action: () => {
         window.scrollTo({ top: 580, behavior: 'smooth' });
@@ -51,35 +95,43 @@ export const AutoTourRunner = () => {
     },
     {
       id: 'scene3_calendar_heatmap',
-      duration: 13,
-      title: 'Scene 3: Daily Spending Heatmap',
+      duration: 12,
+      title: 'Scene 3: 3-Month Spending Calendar Heatmap',
       route: '/calendar',
       action: () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(() => {
           const dayButtons = document.querySelectorAll('button[class*="min-h-"]');
           if (dayButtons.length > 5) {
-            dayButtons[4].click();
+            dayButtons[5].click(); // click Day 6 Petrol refill
           }
         }, 1200);
       },
     },
     {
-      id: 'scene4_ai_advisor',
+      id: 'scene4_gemini_doubts',
       duration: 12,
-      title: 'Scene 4: The 0-Salary AI Financial Manager',
+      title: 'Scene 4: Asking Gemini Financial Doubts',
       route: '/insights',
       action: () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Automatically open the Gemini Chat modal on screen!
+        setTimeout(() => {
+          const chatButton = document.querySelector('button[title*="Chat"], button:has(svg.lucide-sparkles)');
+          if (chatButton) chatButton.click();
+        }, 1000);
       },
     },
     {
       id: 'scene5_triumphant_close',
-      duration: 10,
-      title: 'Scene 5: Complete Financial Peace of Mind',
-      route: '/dashboard',
+      duration: 11,
+      title: 'Scene 5: Total Peace of Mind & 3 Actionable Tips',
+      route: '/insights',
       action: () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Close chat if open, show insights report
+        const closeBtn = document.querySelector('button[aria-label="Close"], button:has(svg.lucide-x)');
+        if (closeBtn) closeBtn.click();
+        window.scrollTo({ top: 350, behavior: 'smooth' });
       },
     },
   ];
@@ -90,13 +142,11 @@ export const AutoTourRunner = () => {
     setCurrentStepIndex(0);
     setElapsedSeconds(0);
 
-    // Stop audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
 
-    // Stop recorder if active
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try {
         mediaRecorderRef.current.stop();
@@ -105,7 +155,6 @@ export const AutoTourRunner = () => {
       }
     }
 
-    // Stop tracks
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -127,17 +176,14 @@ export const AutoTourRunner = () => {
       setCurrentStepIndex(index);
       const step = steps[index];
 
-      // Navigate if route differs
       if (location.pathname !== step.route) {
         navigate(step.route);
       }
 
-      // Execute smooth page scroll / click
       setTimeout(() => {
         if (step.action) step.action();
       }, 450);
 
-      // Schedule next step
       if (stepTimeoutRef.current) clearTimeout(stepTimeoutRef.current);
       stepTimeoutRef.current = setTimeout(() => {
         executeStep(index + 1);
@@ -146,6 +192,16 @@ export const AutoTourRunner = () => {
     [navigate, location.pathname, stopTour, steps]
   );
 
+  // Initialize Arjun Sharma's Profile & Chat Data
+  const prepareProfessionalSession = async () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(SEEDED_CHAT_SESSIONS));
+      await login('arjun.sharma@techcorp.io', 'Password123!');
+    } catch (err) {
+      console.warn('Professional login fallback:', err);
+    }
+  };
+
   // Start Tour
   const runTourSequence = async () => {
     setShowFinishedModal(false);
@@ -153,20 +209,12 @@ export const AutoTourRunner = () => {
     setElapsedSeconds(0);
     setCurrentStepIndex(0);
 
-    // Ensure demo user is logged in so rich data (₹45,000 spent, budget, charts) is live
-    if (!isAuthenticated) {
-      try {
-        await login('demo@example.com', 'Password123!');
-      } catch (err) {
-        console.error('Auto login failed:', err);
-      }
-    }
+    await prepareProfessionalSession();
 
     if (location.pathname !== '/dashboard') {
       navigate('/dashboard');
     }
 
-    // 1-second interval counter
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setElapsedSeconds((prev) => prev + 1);
@@ -178,29 +226,23 @@ export const AutoTourRunner = () => {
   // 1-Click Silent Auto-Record Video with Embedded Studio Voiceover
   const startRecordingAndTour = async () => {
     try {
-      // 1. Request user to pick the browser tab to record
       const displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: { displaySurface: 'browser' },
-        audio: true, // Captures tab audio digitally
+        audio: true,
       });
       streamRef.current = displayStream;
 
-      // 2. Load the pre-rendered studio voiceover audio
       const audio = new Audio('/cinematic_voiceover.m4a');
       audioRef.current = audio;
 
-      // 3. Digital Audio Mixing (streams voiceover internally into the video stream)
-      // This works even when the physical Mac speakers are completely MUTED!
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       const audioCtx = new AudioCtx();
       const sourceNode = audioCtx.createMediaElementSource(audio);
       const destNode = audioCtx.createMediaStreamDestination();
 
       sourceNode.connect(destNode);
-      // Optional: connect to destination only if user wants to hear through headphones
       sourceNode.connect(audioCtx.destination);
 
-      // Combine video track + digital voiceover audio track
       const combinedTracks = [
         ...displayStream.getVideoTracks(),
         ...destNode.stream.getAudioTracks(),
@@ -226,16 +268,14 @@ export const AutoTourRunner = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'AI_Expense_Analyzer_1Min_Cinematic_Demo.webm';
+        a.download = 'Arjun_Sharma_AI_Expense_Analyzer_Demo.webm';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
 
-        // Stop all tracks
         displayStream.getTracks().forEach((track) => track.stop());
       };
 
-      // Listen for user stopping screen share via browser popup
       displayStream.getVideoTracks()[0].onended = () => {
         stopTour();
       };
@@ -243,17 +283,14 @@ export const AutoTourRunner = () => {
       recorder.start(1000);
       setIsRecordingVideo(true);
 
-      // Play digital audio & start visual tour
       await audio.play();
-      runTourSequence();
+      await runTourSequence();
     } catch (err) {
-      console.warn('Screen recording cancelled or failed, falling back to visual tour:', err);
-      // If user cancels permission dialog, just run the tour
+      console.warn('Screen recording cancelled, falling back to visual tour:', err);
       runTourSequence();
     }
   };
 
-  // Keyboard shortcut: Esc to cancel tour
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isRunning) {
@@ -264,7 +301,6 @@ export const AutoTourRunner = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isRunning, stopTour]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -282,13 +318,13 @@ export const AutoTourRunner = () => {
             <button
               onClick={startRecordingAndTour}
               className="flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs transition-transform hover:scale-105 cursor-pointer shadow-lg shadow-indigo-900/40"
-              title="Record tab video with studio voiceover silently in class"
+              title="Record tab video with Arjun Sharma profile & studio voiceover silently in class"
             >
               <Video className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-              <span>Record & Download 1-Min Video (Silent in Class)</span>
+              <span>Record 1-Min Video (Arjun Sharma Showcase)</span>
             </button>
 
-            {/* Secondary Action: Visual Tour Only (For macOS Cmd+Shift+5) */}
+            {/* Secondary Action: Visual Tour Only */}
             <button
               onClick={runTourSequence}
               className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full hover:bg-slate-800 text-slate-300 text-xs font-medium transition-colors cursor-pointer"
@@ -327,22 +363,22 @@ export const AutoTourRunner = () => {
             </div>
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">
-                1-Minute Tour Completed
+                Showcase Video Completed
               </span>
               <h3 className="text-lg font-extrabold text-slate-900 mt-1">
                 {isRecordingVideo ? 'Video Downloaded!' : 'Demo Complete!'}
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                 {isRecordingVideo
-                  ? 'Your video was recorded silently with embedded studio voiceover and downloaded to your Downloads folder as an MP4/WebM file.'
-                  : 'Your 1-minute cinematic tour has completed. You can re-run anytime.'}
+                  ? 'Your 1-minute video featuring Arjun Sharma, 3 months of data, budget pacing, and Gemini doubts resolution is in your Downloads folder.'
+                  : 'The 1-minute showcase tour has completed successfully.'}
               </p>
             </div>
 
             <div className="pt-2 flex flex-col gap-2">
               <a
                 href="/cinematic_voiceover.m4a"
-                download="AI_Expense_Analyzer_Voiceover.m4a"
+                download="Arjun_Sharma_Voiceover.m4a"
                 className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
               >
                 <Download className="w-3.5 h-3.5 mr-1.5" />
