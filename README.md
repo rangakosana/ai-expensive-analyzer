@@ -39,8 +39,10 @@
 
 ## 📺 Video Demo Walkthrough
 
-▶️ **[Click to Watch the 2-Minute Demo Video Walkthrough](https://youtu.be/)**  
-*(Demonstrates: Account registration & onboarding tour, receipt photo scanning with Gemini Vision, budget pacing & safe daily limits, calendar heatmap inspection, and Gemini AI Chatbot).*
+[![Watch the Demo Video](https://img.youtube.com/vi/0Pk_CK2ozvw/hqdefault.jpg)](https://youtu.be/0Pk_CK2ozvw)
+
+▶️ **[Click to Watch the 2-Minute Demo Video Walkthrough on YouTube](https://youtu.be/0Pk_CK2ozvw)**  
+*(Demonstrates: The relatable everyday money problem, interactive onboarding carousel, paper receipt scanning with Gemini 2.5 Flash Vision OCR, real-time budget pacing & Safe Daily Limit engine, visual calendar heatmap inspection, and 100% private Gemini AI Chatbot).*
 
 ---
 
