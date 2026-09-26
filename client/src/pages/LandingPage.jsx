@@ -36,30 +36,27 @@ export const LandingPage = () => {
         </p>
 
         <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+          <Link
+            to={isAuthenticated ? "/dashboard" : "/register"}
+            className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all hover:scale-[1.02]"
+          >
+            Get Started Free
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Link>
           {isAuthenticated ? (
             <Link
               to="/dashboard"
-              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all hover:scale-[1.02]"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-base font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 shadow-sm transition-all"
             >
-              Go to Your Dashboard
-              <ArrowRight className="w-5 h-5 ml-2" />
+              Open Dashboard
             </Link>
           ) : (
-            <>
-              <Link
-                to="/register"
-                className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all hover:scale-[1.02]"
-              >
-                Start Free Analysis
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Link>
-              <Link
-                to="/login"
-                className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-base font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 shadow-sm transition-all"
-              >
-                Sign In to Account
-              </Link>
-            </>
+            <Link
+              to="/login"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-base font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 shadow-sm transition-all"
+            >
+              Sign In to Account
+            </Link>
           )}
         </div>
 

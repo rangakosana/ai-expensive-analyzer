@@ -74,65 +74,72 @@ export const AutoTourRunner = () => {
   const recordedChunksRef = useRef([]);
   const streamRef = useRef(null);
 
-  // 60-Second Professional Employee Storyboard
+  // 60-Second Professional Employee Storyboard - Synchronized with Audio Down to Milliseconds
   const steps = [
     {
-      id: 'scene1_dashboard_clarity',
-      duration: 13,
-      title: 'Scene 1: Arjun Sharma - Dashboard & Safe Daily Limit',
+      id: 'scene1_intro_dashboard',
+      duration: 15.5,
+      title: 'Scene 1: Arjun Sharma - Financial Dilemma & Dashboard Clarity',
       route: '/dashboard',
       action: () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       },
     },
     {
-      id: 'scene2_visual_breakdown',
-      duration: 12,
-      title: 'Scene 2: Dynamic Budget Pacing & Recharts',
+      id: 'scene2_pacing_charts',
+      duration: 12.5,
+      title: 'Scene 2: Safe Daily Limit & Budget Pacing Recharts',
       route: '/dashboard',
       action: () => {
-        window.scrollTo({ top: 580, behavior: 'smooth' });
+        window.scrollTo({ top: 560, behavior: 'smooth' });
       },
     },
     {
-      id: 'scene3_calendar_heatmap',
-      duration: 12,
-      title: 'Scene 3: 3-Month Spending Calendar Heatmap',
+      id: 'scene3_calendar_receipts',
+      duration: 8.0,
+      title: 'Scene 3: Calendar Heatmap & Itemized Receipts',
       route: '/calendar',
       action: () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Voice speaks "Tap any date..." at 30.8s (2.8s into this scene)
         setTimeout(() => {
           const dayButtons = document.querySelectorAll('button[class*="min-h-"]');
           if (dayButtons.length > 5) {
             dayButtons[5].click(); // click Day 6 Petrol refill
           }
-        }, 1200);
+        }, 2800);
       },
     },
     {
       id: 'scene4_gemini_doubts',
-      duration: 12,
-      title: 'Scene 4: Asking Gemini Financial Doubts',
+      duration: 13.0,
+      title: 'Scene 4: Gemini AI Doubts & Instant Cash Flow Answers',
       route: '/insights',
       action: () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        // Automatically open the Gemini Chat modal on screen!
+        // Voice speaks "like whether I can afford a weekend trip..." at 37.5s (1.5s into this scene)
         setTimeout(() => {
           const chatButton = document.querySelector('button[title*="Chat"], button:has(svg.lucide-sparkles)');
           if (chatButton) chatButton.click();
-        }, 1000);
+        }, 1500);
+
+        // Smoothly close chat modal after query showcase so user sees AI Insights summary
+        setTimeout(() => {
+          const closeBtn = document.querySelector('button[aria-label="Close"], button:has(svg.lucide-x)');
+          if (closeBtn) closeBtn.click();
+        }, 10500);
       },
     },
     {
-      id: 'scene5_triumphant_close',
-      duration: 11,
-      title: 'Scene 5: Total Peace of Mind & 3 Actionable Tips',
-      route: '/insights',
+      id: 'scene5_get_started_page',
+      duration: 11.0,
+      title: 'Scene 5: Get Started with AI Expense Analyzer',
+      route: '/',
       action: () => {
-        // Close chat if open, show insights report
-        const closeBtn = document.querySelector('button[aria-label="Close"], button:has(svg.lucide-x)');
-        if (closeBtn) closeBtn.click();
-        window.scrollTo({ top: 350, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => {
+          window.scrollTo({ top: 120, behavior: 'smooth' });
+        }, 1800);
       },
     },
   ];
