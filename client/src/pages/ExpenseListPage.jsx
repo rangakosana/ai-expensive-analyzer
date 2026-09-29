@@ -9,6 +9,7 @@ import {
   X,
   RefreshCw,
   AlertCircle,
+  Sparkles,
 } from 'lucide-react';
 import { expenseService } from '../services/api.js';
 import { ExpenseTable } from '../components/ExpenseTable.jsx';
@@ -132,13 +133,15 @@ export const ExpenseListPage = () => {
           </p>
         </div>
 
-        <Link
-          to="/expenses/new"
-          className="inline-flex items-center justify-center px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs shadow-indigo-100 transition-colors self-start sm:self-auto"
-        >
-          <PlusCircle className="w-4 h-4 mr-1.5" />
-          Add Expense
-        </Link>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Link
+            to="/expenses/new"
+            className="inline-flex items-center justify-center px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-100 transition-colors"
+          >
+            <Sparkles className="w-4 h-4 mr-1.5 text-amber-300 animate-pulse" />
+            AI Scanner & Add Expense
+          </Link>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}

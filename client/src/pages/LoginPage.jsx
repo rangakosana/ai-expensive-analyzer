@@ -156,6 +156,37 @@ export const LoginPage = () => {
                 </>
               )}
             </button>
+
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-slate-400 font-semibold">Or 1-Click Demo</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={async () => {
+                setEmail('arjun.sharma@techcorp.io');
+                setPassword('Password123!');
+                setLoading(true);
+                try {
+                  await login('arjun.sharma@techcorp.io', 'Password123!');
+                  success('Welcome Arjun! Logged in with demo credentials.');
+                  navigate(from, { replace: true });
+                } catch (err) {
+                  error(err.response?.data?.error || 'Failed to sign in demo account.');
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
+              className="w-full flex items-center justify-center py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-colors cursor-pointer"
+            >
+              Sign In as Demo User (Arjun Sharma)
+            </button>
           </form>
 
           <div className="mt-6 pt-5 border-t border-slate-100 text-center">

@@ -58,6 +58,13 @@ export const LandingPage = () => {
               Sign In to Account
             </Link>
           )}
+          <Link
+            to="/expenses/new"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 rounded-xl text-base font-semibold text-indigo-950 bg-amber-400 hover:bg-amber-300 shadow-md shadow-amber-200/50 transition-all hover:scale-[1.02]"
+          >
+            <Sparkles className="w-5 h-5 mr-2 text-indigo-900 animate-pulse" />
+            Try AI Scanner Table
+          </Link>
         </div>
 
         {/* Application Highlight Frame */}
@@ -68,11 +75,11 @@ export const LandingPage = () => {
                 <span className="w-3 h-3 rounded-full bg-rose-500"></span>
                 <span className="w-3 h-3 rounded-full bg-amber-500"></span>
                 <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
-                <span className="ml-3 text-xs font-mono text-slate-400 hidden sm:inline">https://ai-expense-analyzer.io/dashboard</span>
+                <span className="ml-3 text-xs font-mono text-slate-400 hidden sm:inline">https://ai-expensive-analyzer.vercel.app/expenses/new</span>
               </div>
               <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-400 bg-indigo-950/80 px-3 py-1 rounded-full border border-indigo-800/60">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                <span>AI Expense Analyzer Active</span>
+                <span>AI Batch Scanner Active</span>
               </div>
             </div>
 
@@ -93,44 +100,58 @@ export const LandingPage = () => {
                 <span className="text-[10px] text-indigo-400 font-semibold">Healthy Pacing</span>
               </div>
               <div className="p-3.5 bg-slate-900/90 rounded-2xl border border-slate-800">
-                <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">Gemini Advisor</span>
-                <p className="text-lg sm:text-2xl font-black text-amber-300 mt-0.5">2.5 Flash</p>
-                <span className="text-[10px] text-amber-400 font-semibold">Real-Time Doubts</span>
+                <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">Batch Scanner</span>
+                <p className="text-lg sm:text-2xl font-black text-amber-300 mt-0.5">Multi-Receipt</p>
+                <span className="text-[10px] text-amber-400 font-semibold">Live Review Table</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Feature Highlights Grid */}
-        <div className="mt-12 sm:mt-20 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8 text-left">
-          {/* Card 1 */}
-          <div className="p-5 sm:p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4 sm:mb-5">
-              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="mt-12 sm:mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 text-left">
+          {/* Card 1: Batch Scanner */}
+          <div className="p-5 sm:p-6 bg-white rounded-2xl border-2 border-indigo-500/30 shadow-md hover:shadow-lg transition-shadow relative overflow-hidden">
+            <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+              New
+            </span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
+              <Receipt className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1.5 sm:mb-2">AI Financial Advisor</h3>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1.5">AI Batch Scanner</h3>
             <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
-              Bundles your monthly spending data and queries Gemini with a strict financial advisory prompt to detect micro-overspending and suggest 3 high-impact habits.
+              Drop multiple UPI screenshots or paper receipts. Gemini Vision scans each sequentially with live status indicators and presents an editable review table.
             </p>
           </div>
 
-          {/* Card 2 */}
-          <div className="p-5 sm:p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 sm:mb-5">
+          {/* Card 2: AI Advisor */}
+          <div className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1.5">AI Financial Advisor</h3>
+            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+              Bundles your monthly spending data and queries Gemini with a strict advisory prompt to detect micro-overspending and suggest 3 high-impact habits.
+            </p>
+          </div>
+
+          {/* Card 3: Visual Breakdown */}
+          <div className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
               <PieChart className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1.5 sm:mb-2">Visual Breakdown</h3>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1.5">Visual Breakdown</h3>
             <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
               Instant category distributions, interactive donut charts, and monthly trend graphs so you always know where your money goes.
             </p>
           </div>
 
-          {/* Card 3 */}
-          <div className="p-5 sm:p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center mb-4 sm:mb-5">
+          {/* Card 4: Isolation */}
+          <div className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center mb-4">
               <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1.5 sm:mb-2">Bank-Grade Isolation</h3>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1.5">Bank-Grade Isolation</h3>
             <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
               Strict backend authorization enforcing row-level security. Your financial data is securely hashed, validated via Zod, and never shared.
             </p>

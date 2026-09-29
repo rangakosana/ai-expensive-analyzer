@@ -75,6 +75,10 @@ export const Navbar = () => {
                   <Receipt className="w-4 h-4 mr-2" />
                   Expenses
                 </NavLink>
+                <NavLink to="/expenses/new" className={navLinkClass}>
+                  <Sparkles className="w-4 h-4 mr-2 text-indigo-600" />
+                  AI Scanner
+                </NavLink>
                 <NavLink to="/insights" className={navLinkClass}>
                   <Sparkles className="w-4 h-4 mr-2 text-amber-500" />
                   AI Insights

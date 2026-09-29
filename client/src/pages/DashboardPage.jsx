@@ -202,13 +202,45 @@ export const DashboardPage = () => {
             Guide
           </button>
 
-          {/* Quick Add Expense CTA */}
+          {/* Quick Add Expense / Scanner CTA */}
           <Link
             to="/expenses/new"
-            className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs shadow-indigo-100 transition-colors ml-auto sm:ml-0"
+            className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-all hover:scale-[1.02] ml-auto sm:ml-0"
           >
-            <PlusCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-            Add Expense
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 text-amber-300 animate-pulse" />
+            AI Scanner & Add Expense
+          </Link>
+        </div>
+      </div>
+
+      {/* AI Batch Scanner Quick Banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 p-4 sm:p-5 text-white shadow-md border border-indigo-700/40">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-amber-300 border border-white/20 shadow-inner flex-shrink-0">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded border border-amber-400/30">
+                  New Feature
+                </span>
+                <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                  Multi-Receipt AI Batch Scanner & Live Review Table
+                </h2>
+              </div>
+              <p className="text-xs sm:text-sm text-indigo-200 mt-0.5">
+                Upload multiple UPI payment screenshots or paper receipts. Gemini Vision scans each sequentially with live status indicators and lets you review before saving!
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/expenses/new"
+            className="inline-flex items-center justify-center px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold text-indigo-950 bg-amber-400 hover:bg-amber-300 transition-all shadow-sm hover:scale-[1.02] flex-shrink-0"
+          >
+            <Sparkles className="w-4 h-4 mr-1.5" />
+            Open Scanner Table
+            <ArrowRight className="w-4 h-4 ml-1.5" />
           </Link>
         </div>
       </div>
