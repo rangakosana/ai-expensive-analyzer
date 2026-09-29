@@ -68,8 +68,8 @@ app.get('*', (req, res) => {
 // Centralized error handler
 app.use(errorHandler);
 
-// Start listening if not imported by test suite
-if (process.env.NODE_ENV !== 'test') {
+// Start listening if not imported by test suite or running on Vercel
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`===============================================`);
     console.log(`🚀 AI Expense Analyzer API running on port ${PORT}`);
