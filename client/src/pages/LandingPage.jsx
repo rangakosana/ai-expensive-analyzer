@@ -140,18 +140,17 @@ export const LandingPage = () => {
         {/* Categories Supported */}
         <div className="mt-10 sm:mt-16 p-4 sm:p-6 rounded-2xl bg-indigo-50/50 border border-indigo-100 max-w-4xl mx-auto">
           <p className="text-xs font-bold uppercase tracking-wider text-indigo-700 mb-3">
-            9 Supported Expense Categories
+            Supported Everyday Categories • Fixed Obligations Protected Up-Front
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
             {[
-              'Housing',
-              'Transportation',
               'Food & Dining',
-              'Utilities',
+              'Transportation',
+              'Shopping',
               'Entertainment',
               'Healthcare',
-              'Shopping',
               'Personal Care',
+              'Utilities',
               'Miscellaneous',
             ].map((cat) => (
               <span

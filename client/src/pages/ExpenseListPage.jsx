@@ -15,14 +15,13 @@ import { ExpenseTable } from '../components/ExpenseTable.jsx';
 import { useToast } from '../components/Toast.jsx';
 
 const CATEGORIES = [
-  'Housing',
-  'Transportation',
   'Food & Dining',
-  'Utilities',
+  'Transportation',
+  'Shopping',
   'Entertainment',
   'Healthcare',
-  'Shopping',
   'Personal Care',
+  'Utilities',
   'Miscellaneous',
 ];
 

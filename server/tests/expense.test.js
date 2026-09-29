@@ -81,6 +81,48 @@ describe('Expenses API & Data Isolation (/api/expenses)', () => {
     });
   });
 
+  describe('POST /api/expenses/batch', () => {
+    it('should create multiple expenses in batch', async () => {
+      const res = await request(app)
+        .post('/api/expenses/batch')
+        .set('Authorization', `Bearer ${user1Token}`)
+        .send({
+          expenses: [
+            {
+              amount: 120,
+              merchant: 'Swiggy',
+              category: 'Food & Dining',
+              expense_date: '2026-09-15',
+              notes: 'Dinner',
+            },
+            {
+              amount: 500,
+              merchant: 'Shell Petrol',
+              category: 'Transportation',
+              expense_date: '2026-09-15',
+              notes: 'Fuel',
+            },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.count).toBe(2);
+      expect(res.body.data.length).toBe(2);
+      expect(res.body.data[0].merchant).toBe('Swiggy');
+      expect(res.body.data[1].merchant).toBe('Shell Petrol');
+    });
+
+    it('should reject empty batch array', async () => {
+      const res = await request(app)
+        .post('/api/expenses/batch')
+        .set('Authorization', `Bearer ${user1Token}`)
+        .send({ expenses: [] });
+
+      expect(res.status).toBe(400);
+    });
+  });
+
   describe('Row Level Data Isolation (User A vs User B)', () => {
     let aliceExpenseId;
     let bobExpenseId;

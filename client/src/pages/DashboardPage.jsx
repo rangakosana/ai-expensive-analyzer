@@ -52,9 +52,7 @@ export const DashboardPage = () => {
       ]);
       setSummary(summaryRes.data);
       setMonthExpenses(expensesRes.data || []);
-      if (budgetRes?.data) {
-        setBudget(budgetRes.data);
-      }
+      setBudget(budgetRes?.data || null);
     } catch (err) {
       const msg = err.response?.data?.error || 'Failed to load dashboard summary.';
       setError(msg);

@@ -48,9 +48,10 @@ export const expenseService = {
   getExpenseSummary: (month) => api.get('/expenses/summary', { params: { month } }),
   getExpenseById: (id) => api.get(`/expenses/${id}`),
   createExpense: (expenseData) => api.post('/expenses', expenseData),
+  createBatchExpenses: (expenses) => api.post('/expenses/batch', { expenses }),
   updateExpense: (id, expenseData) => api.put(`/expenses/${id}`, expenseData),
   deleteExpense: (id) => api.delete(`/expenses/${id}`),
-  scanReceipt: (data) => api.post('/expenses/scan-receipt', data, { timeout: 15000 }),
+  scanReceipt: (data) => api.post('/expenses/scan-receipt', data, { timeout: 20000 }),
 };
 
 export const insightService = {

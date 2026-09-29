@@ -49,3 +49,25 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* AI Scanner Shimmer & Row Highlight */
+@keyframes shimmerAnim {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer-sweep {
+  background: linear-gradient(90deg, rgba(241, 245, 249, 0.6) 0%, rgba(224, 231, 255, 0.8) 50%, rgba(241, 245, 249, 0.6) 100%);
+  background-size: 200% 100%;
+  animation: shimmerAnim 1.6s infinite ease-in-out;
+}
+
+@keyframes rowFlashSuccess {
+  0% { background-color: rgba(52, 211, 153, 0.25); }
+  100% { background-color: transparent; }
+}
+
+.animate-row-flash {
+  animation: rowFlashSuccess 1.4s ease-out;
+}
+

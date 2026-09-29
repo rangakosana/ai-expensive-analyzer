@@ -110,6 +110,41 @@ export const createExpense = async (req, res, next) => {
   }
 };
 
+export const createBatchExpenses = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { expenses } = req.body;
+
+    if (!Array.isArray(expenses) || expenses.length === 0) {
+      return res.status(400).json({ error: 'Please provide an array of expenses to save.' });
+    }
+
+    const insertedRows = [];
+    for (const exp of expenses) {
+      const validatedData = expenseSchema.parse(exp);
+      const { amount, merchant, category, expense_date, notes } = validatedData;
+
+      const result = await query(
+        `INSERT INTO expenses (user_id, amount, merchant, category, expense_date, notes)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id, user_id, amount::float, merchant, category,
+                   TO_CHAR(expense_date, 'YYYY-MM-DD') AS expense_date,
+                   notes, created_at, updated_at`,
+        [userId, amount, merchant, category, expense_date, notes]
+      );
+      insertedRows.push(result.rows[0]);
+    }
+
+    res.status(201).json({
+      success: true,
+      count: insertedRows.length,
+      data: insertedRows,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateExpense = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -200,33 +235,33 @@ export const getSummary = async (req, res, next) => {
     const userId = req.user.id;
     const month = req.query.month || new Date().toISOString().slice(0, 7);
 
-    // Total spent & transaction count
+    // Total spent & transaction count (flexible everyday spending, excluding fixed housing obligations)
     const totalResult = await query(
       `SELECT COALESCE(SUM(amount), 0)::float AS total_spent,
               COUNT(*)::int AS transaction_count
        FROM expenses
-       WHERE user_id = $1 AND TO_CHAR(expense_date, 'YYYY-MM') = $2`,
+       WHERE user_id = $1 AND TO_CHAR(expense_date, 'YYYY-MM') = $2 AND category != 'Housing'`,
       [userId, month]
     );
 
-    // Spend by category
+    // Spend by category (strictly flexible categories)
     const categoryResult = await query(
       `SELECT category,
               SUM(amount)::float AS total_spent,
               COUNT(*)::int AS count
        FROM expenses
-       WHERE user_id = $1 AND TO_CHAR(expense_date, 'YYYY-MM') = $2
+       WHERE user_id = $1 AND TO_CHAR(expense_date, 'YYYY-MM') = $2 AND category != 'Housing'
        GROUP BY category
        ORDER BY total_spent DESC`,
       [userId, month]
     );
 
-    // Recent 5 expenses
+    // Recent 5 expenses (strictly flexible everyday expenses)
     const recentResult = await query(
       `SELECT id, amount::float, merchant, category,
               TO_CHAR(expense_date, 'YYYY-MM-DD') AS expense_date, notes
        FROM expenses
-       WHERE user_id = $1
+       WHERE user_id = $1 AND category != 'Housing'
        ORDER BY expense_date DESC, created_at DESC
        LIMIT 5`,
       [userId]
@@ -282,6 +317,7 @@ export default {
   getExpenses,
   getExpenseById,
   createExpense,
+  createBatchExpenses,
   updateExpense,
   deleteExpense,
   getSummary,

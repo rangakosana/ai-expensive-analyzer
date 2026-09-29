@@ -74,18 +74,15 @@ async function seed() {
     await client.query('DELETE FROM expenses WHERE user_id = $1', [userId]);
 
     const sampleExpenses = [
-      { amount: 22000.00, merchant: 'Prestige Apartments', category: 'Housing', date: `${ym}-01`, notes: 'Monthly Rent Payment' },
       { amount: 3250.00, merchant: 'Nature Basket Supermarket', category: 'Food & Dining', date: `${ym}-03`, notes: 'Weekly organic groceries' },
       { amount: 480.00, merchant: 'Blue Tokai Coffee', category: 'Food & Dining', date: `${ym}-04`, notes: 'Pour-over coffee & breakfast bagel' },
       { amount: 2500.00, merchant: 'Indian Oil Petrol Pump', category: 'Transportation', date: `${ym}-05`, notes: 'Vehicle fuel refill' },
-      { amount: 3500.00, merchant: 'State Electricity Board', category: 'Utilities', date: `${ym}-07`, notes: 'Monthly electric power' },
       { amount: 899.00, merchant: 'Netflix 4K Ultra', category: 'Entertainment', date: `${ym}-09`, notes: 'Monthly entertainment streaming' },
       { amount: 1450.00, merchant: 'Apollo Pharmacy', category: 'Healthcare', date: `${ym}-11`, notes: 'Health supplements and eye drops' },
       { amount: 4299.00, merchant: 'Amazon India', category: 'Shopping', date: `${ym}-13`, notes: 'Ergonomic keyboard and desk mat' },
       { amount: 650.00, merchant: 'Starbucks Reserve', category: 'Food & Dining', date: `${ym}-15`, notes: 'Cold brew and sandwich' },
       { amount: 850.00, merchant: 'Toni & Guy Salon', category: 'Personal Care', date: `${ym}-16`, notes: 'Haircut and grooming' },
       { amount: 720.00, merchant: 'Swiggy Gourmet', category: 'Food & Dining', date: `${ym}-18`, notes: 'Dinner delivery with friends' },
-      { amount: 1500.00, merchant: 'Airtel Fiber Broadband', category: 'Utilities', date: `${ym}-19`, notes: 'High-speed gigabit internet' },
       { amount: 650.00, merchant: 'PVR IMAX Cinemas', category: 'Entertainment', date: `${ym}-21`, notes: 'Movie ticket & popcorn' },
       { amount: 1850.00, merchant: 'Uber Premier', category: 'Transportation', date: `${ym}-22`, notes: 'Airport commute' },
       { amount: 490.00, merchant: 'Third Wave Coffee', category: 'Food & Dining', date: `${ym}-24`, notes: 'Afternoon client meeting' }
@@ -98,25 +95,24 @@ async function seed() {
         [userId, exp.amount, exp.merchant, exp.category, exp.date, exp.notes]
       );
     }
-    console.log(`💳 Inserted ${sampleExpenses.length} sample expenses for ${ym}`);
+    console.log(`💳 Inserted ${sampleExpenses.length} sample flexible expenses for ${ym}`);
 
-    // 3. Seed Realistic AI Insight Report
+    // 3. Seed Realistic AI Insight Report (strictly flexible categories)
     const insightData = {
-      total_analyzed_amount: 44638.00,
-      top_spending_category: "Housing",
+      total_analyzed_amount: 18088.00,
+      top_spending_category: "Food & Dining",
       category_breakdown: [
-        { category: "Housing", total: 22000.00, percentage: 49.3 },
-        { category: "Food & Dining", total: 5590.00, percentage: 12.5 },
-        { category: "Utilities", total: 5000.00, percentage: 11.2 },
-        { category: "Shopping", total: 4299.00, percentage: 9.6 },
-        { category: "Transportation", total: 4350.00, percentage: 9.7 },
-        { category: "Entertainment", total: 1549.00, percentage: 3.5 },
-        { category: "Healthcare", total: 1450.00, percentage: 3.2 }
+        { category: "Food & Dining", total: 5590.00, percentage: 30.9 },
+        { category: "Transportation", total: 4350.00, percentage: 24.1 },
+        { category: "Shopping", total: 4299.00, percentage: 23.8 },
+        { category: "Entertainment", total: 1549.00, percentage: 8.6 },
+        { category: "Healthcare", total: 1450.00, percentage: 8.0 },
+        { category: "Personal Care", total: 850.00, percentage: 4.7 }
       ],
-      unnecessary_spending_identified: "Detected daily micro-purchases in premium artisanal cafes totaling ₹2,270 this month, alongside discretionary rideshare surges. Fixed obligations remain disciplined.",
+      unnecessary_spending_identified: "Detected daily micro-purchases in premium artisanal cafes totaling ₹2,270 this month, alongside discretionary rideshare surges. Fixed obligations (Rent ₹22k, Utilities ₹5k) are protected up-front.",
       actionable_tips: [
         "Cap daily cafe visits to 2 times a week to immediately recover ₹1,800 monthly without affecting your routine.",
-        "Your current Safe Daily Limit is ₹1,350/day. Maintaining this pacing will preserve your ₹17,000 monthly savings goal.",
+        "With ₹22,912 left of your ₹41,000 everyday spending budget, your Safe Daily Limit is healthy and your ₹17,000 savings target is 100% on track.",
         "Consolidate multiple short delivery orders into weekly scheduled grocery runs to save ₹650 on convenience surcharges."
       ]
     };

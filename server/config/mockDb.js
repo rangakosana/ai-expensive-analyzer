@@ -79,55 +79,10 @@ export class MockDatabase {
       password_hash: passwordHash,
       created_at: new Date().toISOString(),
     });
-
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const ym = `${year}-${month}`;
-
-    const sampleExpenses = [
-      { amount: 1250.00, merchant: 'Apex Properties', category: 'Housing', date: `${ym}-01`, notes: 'Monthly Apartment Rent' },
-      { amount: 65.40, merchant: 'Whole Foods Market', category: 'Food & Dining', date: `${ym}-03`, notes: 'Weekly grocery run' },
-      { amount: 14.50, merchant: 'Starbucks', category: 'Food & Dining', date: `${ym}-04`, notes: 'Morning latte and croissant' },
-      { amount: 45.00, merchant: 'Shell Gas Station', category: 'Transportation', date: `${ym}-05`, notes: 'Fuel' },
-      { amount: 120.00, merchant: 'Metro Electric Utility', category: 'Utilities', date: `${ym}-07`, notes: 'Electric & Gas bill' },
-      { amount: 18.99, merchant: 'Netflix', category: 'Entertainment', date: `${ym}-09`, notes: 'Monthly streaming subscription' },
-      { amount: 35.00, merchant: 'Walgreens Pharmacy', category: 'Healthcare', date: `${ym}-11`, notes: 'Vitamins and prescription' },
-      { amount: 89.99, merchant: 'Amazon', category: 'Shopping', date: `${ym}-13`, notes: 'Office supplies & wireless mouse' },
-      { amount: 16.50, merchant: 'Starbucks', category: 'Food & Dining', date: `${ym}-15`, notes: 'Coffee meeting' },
-      { amount: 40.00, merchant: 'City Barber Shop', category: 'Personal Care', date: `${ym}-17`, notes: 'Haircut and styling' },
-      { amount: 15.25, merchant: 'Starbucks', category: 'Food & Dining', date: `${ym}-19`, notes: 'Cold brew and snack' },
-      { amount: 72.80, merchant: "Trader Joe's", category: 'Food & Dining', date: `${ym}-21`, notes: 'Groceries and snacks' },
-      { amount: 13.99, merchant: 'Spotify', category: 'Entertainment', date: `${ym}-22`, notes: 'Music premium plan' }
-    ];
-
-    for (const exp of sampleExpenses) {
-      this.expenses.push({
-        id: crypto.randomUUID(),
-        user_id: demoUserId,
-        amount: Number(exp.amount),
-        merchant: exp.merchant,
-        category: exp.category,
-        expense_date: exp.date,
-        notes: exp.notes || null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
-    }
-
-    this.budgets.push({
-      id: crypto.randomUUID(),
-      user_id: demoUserId,
-      monthly_income: 3000.00,
-      savings_target_percentage: 20,
-      fixed_bills: [
-        { id: '1', name: 'House Rent', amount: 1250.00, category: 'Housing' },
-        { id: '2', name: 'Metro Electric Utility', amount: 120.00, category: 'Utilities' },
-        { id: '3', name: 'Mobile Recharge', amount: 50.00, category: 'Utilities' },
-      ],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
+    // Fresh zero-state: no fake expenses or pre-seeded budgets
+    this.expenses = [];
+    this.budgets = [];
+    this.ai_insights = [];
   }
 
   async query(text, params = []) {
@@ -218,7 +173,8 @@ export class MockDatabase {
     // 8. Summary query - Total spent
     if (sql.includes('COALESCE(SUM(amount), 0)::float AS total_spent')) {
       const [userId, month] = params;
-      const filtered = this.expenses.filter((e) => e.user_id === userId && e.expense_date.startsWith(month));
+      const excludeHousing = sql.includes("category != 'Housing'");
+      const filtered = this.expenses.filter((e) => e.user_id === userId && e.expense_date.startsWith(month) && (!excludeHousing || e.category !== 'Housing'));
       const total = filtered.reduce((acc, curr) => acc + curr.amount, 0);
       return { rows: [{ total_spent: total, transaction_count: filtered.length }], rowCount: 1 };
     }
@@ -226,7 +182,8 @@ export class MockDatabase {
     // 9. Summary query - Category breakdown
     if (sql.includes('GROUP BY category')) {
       const [userId, month] = params;
-      const filtered = this.expenses.filter((e) => e.user_id === userId && e.expense_date.startsWith(month));
+      const excludeHousing = sql.includes("category != 'Housing'");
+      const filtered = this.expenses.filter((e) => e.user_id === userId && e.expense_date.startsWith(month) && (!excludeHousing || e.category !== 'Housing'));
       const map = {};
       filtered.forEach((e) => {
         if (!map[e.category]) map[e.category] = { total_spent: 0, count: 0 };

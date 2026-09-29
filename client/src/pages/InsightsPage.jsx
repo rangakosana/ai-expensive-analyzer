@@ -47,7 +47,7 @@ export const InsightsPage = () => {
         budgetService.getBudget().catch(() => ({ data: null })),
       ]);
       setPastReports(reportsRes.data);
-      if (budgetRes?.data) setBudget(budgetRes.data);
+      setBudget(budgetRes?.data || null);
 
       // Default active report to the currently selected month if available, or first report
       const matching = reportsRes.data.find((r) => r.report_month === selectedMonth);
@@ -55,6 +55,8 @@ export const InsightsPage = () => {
         setActiveReport(matching);
       } else if (reportsRes.data.length > 0) {
         setActiveReport(reportsRes.data[0]);
+      } else {
+        setActiveReport(null);
       }
     } catch (err) {
       console.error('Failed to load past insights:', err);

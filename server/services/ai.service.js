@@ -272,17 +272,12 @@ export const generateFinancialReport = async (month, expenses, userBudget = null
     }))
     .sort((a, b) => b.amount - a.amount);
 
-  // Category breakdown for whole month
-  const categoryTotalsAll = {};
-  expenses.forEach((e) => {
-    categoryTotalsAll[e.category] = (categoryTotalsAll[e.category] || 0) + Number(e.amount);
-  });
-
-  const categoryBreakdown = Object.entries(categoryTotalsAll)
+  // Category breakdown for flexible everyday spending (strictly excluding fixed bills & housing)
+  const categoryBreakdown = Object.entries(flexibleCategoryTotals)
     .map(([category, amt]) => ({
       category,
       total_spent: Number(amt.toFixed(2)),
-      percentage_of_total: totalSpentAll > 0 ? Number(((amt / totalSpentAll) * 100).toFixed(1)) : 0,
+      percentage_of_total: flexibleSpent > 0 ? Number(((amt / flexibleSpent) * 100).toFixed(1)) : 0,
     }))
     .sort((a, b) => b.total_spent - a.total_spent);
 
@@ -355,7 +350,7 @@ export const generateFinancialReport = async (month, expenses, userBudget = null
     console.warn('💡 Generating simple, friendly financial advice via pacing engine.');
 
     return {
-      total_analyzed_amount: Number(totalSpentAll.toFixed(2)),
+      total_analyzed_amount: Number(flexibleSpent.toFixed(2)),
       category_breakdown: categoryBreakdown,
       unnecessary_spending_identified: waste,
       actionable_tips: fallbackTips,
@@ -489,7 +484,7 @@ Provide a JSON object adhering to the schema:
     console.warn('Gemini call failed, falling back to data-faithful pacing report:', err.message);
 
     return {
-      total_analyzed_amount: Number(totalSpentAll.toFixed(2)),
+      total_analyzed_amount: Number(flexibleSpent.toFixed(2)),
       category_breakdown: categoryBreakdown,
       unnecessary_spending_identified: waste,
       actionable_tips: fallbackTips,

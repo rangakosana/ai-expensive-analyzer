@@ -3,6 +3,7 @@ import {
   getExpenses,
   getExpenseById,
   createExpense,
+  createBatchExpenses,
   updateExpense,
   deleteExpense,
   getSummary,
@@ -18,6 +19,7 @@ router.use(authenticateToken);
 router.get('/', getExpenses);
 router.get('/summary', getSummary);
 router.post('/scan-receipt', scanReceipt);
+router.post('/batch', createBatchExpenses);
 router.get('/:id', getExpenseById);
 router.post('/', createExpense);
 router.put('/:id', updateExpense);
