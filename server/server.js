@@ -42,6 +42,7 @@ const defaultAllowedOrigins = [
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5001',
   'https://ai-expensive-analyzer.vercel.app',
+  'https://i-expense-analyzer.vercel.app',
 ];
 
 export const getAllowedOrigins = () => {
@@ -65,6 +66,11 @@ export const corsOriginValidator = (origin, callback) => {
 
   const allowed = getAllowedOrigins();
   if (allowed.has(origin)) {
+    return callback(null, origin);
+  }
+
+  // Allow project preview deployments on vercel (e.g. i-expense-analyzer-*.vercel.app)
+  if (/^https:\/\/(ai-expensive-analyzer|i-expense-analyzer)(-[a-z0-9-]+)?\.vercel\.app$/.test(origin)) {
     return callback(null, origin);
   }
 

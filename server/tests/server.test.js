@@ -39,6 +39,15 @@ describe('CORS Security Hardening', () => {
     expect(res.headers['access-control-allow-credentials']).toBe('true');
   });
 
+  it('should allow explicitly approved production origin: https://i-expense-analyzer.vercel.app', async () => {
+    const res = await request(app)
+      .get('/api/health')
+      .set('Origin', 'https://i-expense-analyzer.vercel.app');
+
+    expect(res.headers['access-control-allow-origin']).toBe('https://i-expense-analyzer.vercel.app');
+    expect(res.headers['access-control-allow-credentials']).toBe('true');
+  });
+
   it('should allow legitimate localhost development origins', async () => {
     const devOrigins = [
       'http://localhost:5173',

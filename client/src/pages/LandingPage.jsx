@@ -263,7 +263,7 @@ export const LandingPage = () => {
                   <span className="w-3 h-3 rounded-full bg-amber-400"></span>
                   <span className="w-3 h-3 rounded-full bg-emerald-400"></span>
                   <span className="ml-3 font-mono text-slate-400 hidden sm:inline text-[11px]">
-                    https://ai-expensive-analyzer.vercel.app/dashboard
+                    {typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : 'https://i-expense-analyzer.vercel.app/dashboard'}
                   </span>
                 </div>
                 <div className="flex items-center space-x-1.5 font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-full text-[11px]">
