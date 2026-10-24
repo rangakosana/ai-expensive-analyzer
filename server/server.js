@@ -23,11 +23,10 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 
 // Verify critical environment variables fail safely at startup in production
 export const verifyEnvironment = () => {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
     getJwtSecret();
   }
 };
-verifyEnvironment();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -108,13 +107,19 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 
-// API Routes
+// API Routes (mounted under both /api/... and /... for robust Vercel serverless rewrite handling)
 app.use('/api/health', healthRoutes);
+app.use('/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/expenses', expenseRoutes);
 app.use('/api/insights', insightRoutes);
+app.use('/insights', insightRoutes);
 app.use('/api/budget', budgetRoutes);
+app.use('/budget', budgetRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/admin-api', adminRoutes);
 
 // In production, serve static frontend assets
 const clientDistPath = path.join(__dirname, '../client/dist');
