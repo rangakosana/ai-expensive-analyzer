@@ -664,6 +664,448 @@ COMMUNICATION & ADVISORY RULES:
   };
 };
 
+export const VALID_SCANNER_CATEGORIES = [
+  'Housing',
+  'Transportation',
+  'Food & Dining',
+  'Utilities',
+  'Entertainment',
+  'Healthcare',
+  'Shopping',
+  'Personal Care',
+  'Miscellaneous',
+];
+
+const MONTH_MAP = {
+  jan: '01', january: '01',
+  feb: '02', february: '02',
+  mar: '03', march: '03',
+  apr: '04', april: '04',
+  may: '05',
+  jun: '06', june: '06',
+  jul: '07', july: '07',
+  aug: '08', august: '08',
+  sep: '09', sept: '09', september: '09',
+  oct: '10', october: '10',
+  nov: '11', november: '11',
+  dec: '12', december: '12',
+};
+
+/**
+ * Robust date parser supporting YYYY-MM-DD, DD Month YYYY, DD Month, DD/MM/YYYY, etc.
+ * Flags relative timestamps and obscured/missing dates as uncertain rather than guessing today's date.
+ */
+export const parseScannedDate = (rawDate, currentYear = 2026) => {
+  if (!rawDate || typeof rawDate !== 'string') {
+    return {
+      date: '',
+      is_date_confident: false,
+      date_review_reason: 'Date unclear or not visible — please confirm',
+    };
+  }
+
+  const trimmed = rawDate.trim();
+  if (!trimmed) {
+    return {
+      date: '',
+      is_date_confident: false,
+      date_review_reason: 'Date unclear or not visible — please confirm',
+    };
+  }
+
+  // 1. Check for relative time indicators (e.g. "1 min ago", "2 hours ago", "Yesterday", "just now")
+  const isRelative = /\b(min|mins|minute|minutes|hour|hours|sec|second|seconds|ago|yesterday|today|just now)\b/i.test(trimmed);
+  if (isRelative) {
+    return {
+      date: '',
+      is_date_confident: false,
+      date_review_reason: `Relative timestamp ("${trimmed}") — please confirm exact transaction date`,
+    };
+  }
+
+  // 2. Strict ISO: YYYY-MM-DD
+  const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const y = parseInt(isoMatch[1], 10);
+    const m = parseInt(isoMatch[2], 10);
+    const d = parseInt(isoMatch[3], 10);
+    if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+      return {
+        date: trimmed,
+        is_date_confident: true,
+        date_review_reason: null,
+      };
+    }
+  }
+
+  // 3. Day Month Year (e.g. "16 Oct 2026", "16 October 2026", "16-Oct-2026", "16/Oct/2026", "16-October-2026")
+  const dmyMatch = trimmed.match(/^(\d{1,2})[\s/-]+([a-zA-Z]+)[\s/-]+(\d{2,4})$/);
+  if (dmyMatch) {
+    const day = dmyMatch[1].padStart(2, '0');
+    const monthKey = dmyMatch[2].toLowerCase();
+    let year = dmyMatch[3];
+    if (year.length === 2) year = `20${year}`;
+    const m = MONTH_MAP[monthKey];
+    if (m) {
+      return {
+        date: `${year}-${m}-${day}`,
+        is_date_confident: true,
+        date_review_reason: null,
+      };
+    }
+  }
+
+  // 4. Month Day Year (e.g. "Oct 16, 2026", "October 16 2026")
+  const mdyMatch = trimmed.match(/^([a-zA-Z]+)[\s/-]+(\d{1,2}),?[\s/-]+(\d{2,4})$/);
+  if (mdyMatch) {
+    const monthKey = mdyMatch[1].toLowerCase();
+    const day = mdyMatch[2].padStart(2, '0');
+    let year = mdyMatch[3];
+    if (year.length === 2) year = `20${year}`;
+    const m = MONTH_MAP[monthKey];
+    if (m) {
+      return {
+        date: `${year}-${m}-${day}`,
+        is_date_confident: true,
+        date_review_reason: null,
+      };
+    }
+  }
+
+  // 5. Day Month without year (e.g. "16 Oct", "16 October", "16-Oct", "16/Oct")
+  const dmNoYearMatch = trimmed.match(/^(\d{1,2})[\s/-]+([a-zA-Z]+)$/);
+  if (dmNoYearMatch) {
+    const day = dmNoYearMatch[1].padStart(2, '0');
+    const monthKey = dmNoYearMatch[2].toLowerCase();
+    const m = MONTH_MAP[monthKey];
+    if (m) {
+      return {
+        date: `${currentYear}-${m}-${day}`,
+        is_date_confident: true,
+        date_review_reason: null,
+      };
+    }
+  }
+
+  // 6. Month Day without year (e.g. "Oct 16", "October 16")
+  const mdNoYearMatch = trimmed.match(/^([a-zA-Z]+)[\s/-]+(\d{1,2})$/);
+  if (mdNoYearMatch) {
+    const monthKey = mdNoYearMatch[1].toLowerCase();
+    const day = mdNoYearMatch[2].padStart(2, '0');
+    const m = MONTH_MAP[monthKey];
+    if (m) {
+      return {
+        date: `${currentYear}-${m}-${day}`,
+        is_date_confident: true,
+        date_review_reason: null,
+      };
+    }
+  }
+
+  // 7. Numeric DD/MM/YYYY or DD-MM-YYYY (e.g. "16/10/2026", "16-10-2026", "16.10.2026")
+  const numMatch = trimmed.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/);
+  if (numMatch) {
+    let d = parseInt(numMatch[1], 10);
+    let m = parseInt(numMatch[2], 10);
+    let y = numMatch[3];
+    if (y.length === 2) y = `20${y}`;
+    if (m > 12 && d <= 12) {
+      const temp = d;
+      d = m;
+      m = temp;
+    }
+    if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+      const dayStr = String(d).padStart(2, '0');
+      const monthStr = String(m).padStart(2, '0');
+      return {
+        date: `${y}-${monthStr}-${dayStr}`,
+        is_date_confident: true,
+        date_review_reason: null,
+      };
+    }
+  }
+
+  // Unrecognized string format
+  return {
+    date: '',
+    is_date_confident: false,
+    date_review_reason: `Date format ("${trimmed}") unclear — please confirm`,
+  };
+};
+
+/**
+ * Normalizes and validates Gemini Vision scanner output.
+ * Handles single receipts, multi-transaction statement histories, legacy flat objects,
+ * currency strings, missing fields, and partial extraction safely.
+ * Never silently defaults missing or ambiguous dates to today's date.
+ */
+export const normalizeScannedTransactions = (
+  rawParsed,
+  model = 'gemini',
+  todayStr = new Date().toISOString().slice(0, 10)
+) => {
+  if (!rawParsed || typeof rawParsed !== 'object') {
+    return {
+      is_valid_transaction: false,
+      type: 'unrelated',
+      transactions: [],
+      transaction_count: 0,
+      amount: 0,
+      merchant: '',
+      category: 'Miscellaneous',
+      expense_date: '',
+      notes: '',
+      confidence: 'needs_review',
+      is_ready: false,
+      model_used: model,
+    };
+  }
+
+  // Extract raw list of transaction objects
+  let rawList = [];
+  if (Array.isArray(rawParsed)) {
+    rawList = rawParsed;
+  } else if (Array.isArray(rawParsed.transactions)) {
+    rawList = rawParsed.transactions;
+  } else if (rawParsed.amount !== undefined || rawParsed.merchant !== undefined) {
+    rawList = [rawParsed];
+  }
+
+  const currentYear = parseInt(todayStr.slice(0, 4), 10) || 2026;
+
+  const normalizedTransactions = rawList
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+
+      // Clean amount: handles numbers or strings with currency symbols (₹, Rs., INR), commas, decimals
+      let cleanAmount = 0;
+      let hasValidAmount = false;
+      let amountReviewReason = null;
+
+      if (typeof item.amount === 'number' && !isNaN(item.amount)) {
+        cleanAmount = item.amount > 0 ? Math.round(item.amount * 100) / 100 : 0;
+      } else if (typeof item.amount === 'string') {
+        const withoutCurrency = item.amount.replace(/^(?:rs\.?|inr|₹|\$)\s*/i, '');
+        const match = withoutCurrency.replace(/,/g, '').match(/(?:^-)?\d+(?:\.\d+)?/);
+        if (match) {
+          const parsed = parseFloat(match[0]);
+          if (!isNaN(parsed) && parsed > 0) {
+            cleanAmount = Math.round(parsed * 100) / 100;
+          }
+        }
+      }
+
+      hasValidAmount = cleanAmount > 0;
+      if (!hasValidAmount) {
+        amountReviewReason = 'Amount not confidently detected';
+      }
+
+      // Clean merchant / payee
+      let merchant = typeof item.merchant === 'string' ? item.merchant.trim() : '';
+      if (!merchant && typeof item.recipient === 'string') {
+        merchant = item.recipient.trim();
+      }
+      if (!merchant && typeof item.payee === 'string') {
+        merchant = item.payee.trim();
+      }
+      merchant = merchant.slice(0, 100);
+
+      const hasValidMerchant = merchant.length > 0;
+      let merchantReviewReason = null;
+      if (!hasValidMerchant) {
+        merchantReviewReason = 'Merchant name needs review';
+      }
+
+      // Clean category
+      let category = typeof item.category === 'string' ? item.category.trim() : '';
+      if (!VALID_SCANNER_CATEGORIES.includes(category)) {
+        const lowerCat = category.toLowerCase();
+        if (lowerCat.includes('food') || lowerCat.includes('dining') || lowerCat.includes('restaurant') || lowerCat.includes('cafe') || lowerCat.includes('swiggy') || lowerCat.includes('zomato')) {
+          category = 'Food & Dining';
+        } else if (lowerCat.includes('transport') || lowerCat.includes('travel') || lowerCat.includes('fuel') || lowerCat.includes('petrol') || lowerCat.includes('cab') || lowerCat.includes('uber') || lowerCat.includes('ola')) {
+          category = 'Transportation';
+        } else if (lowerCat.includes('shop') || lowerCat.includes('store') || lowerCat.includes('mart') || lowerCat.includes('amazon') || lowerCat.includes('flipkart') || lowerCat.includes('clothing')) {
+          category = 'Shopping';
+        } else if (lowerCat.includes('health') || lowerCat.includes('medical') || lowerCat.includes('pharma') || lowerCat.includes('doctor') || lowerCat.includes('hospital')) {
+          category = 'Healthcare';
+        } else if (lowerCat.includes('entertain') || lowerCat.includes('movie') || lowerCat.includes('game') || lowerCat.includes('netflix') || lowerCat.includes('ott')) {
+          category = 'Entertainment';
+        } else if (lowerCat.includes('utilit') || lowerCat.includes('electric') || lowerCat.includes('water') || lowerCat.includes('gas') || lowerCat.includes('recharge') || lowerCat.includes('bill') || lowerCat.includes('broadband')) {
+          category = 'Utilities';
+        } else if (lowerCat.includes('rent') || lowerCat.includes('housing') || lowerCat.includes('maintenance')) {
+          category = 'Housing';
+        } else if (lowerCat.includes('care') || lowerCat.includes('salon') || lowerCat.includes('fitness') || lowerCat.includes('gym')) {
+          category = 'Personal Care';
+        } else {
+          category = 'Miscellaneous';
+        }
+      }
+
+      // Robust Date Extraction without Silent Defaulting
+      const rawDateInput = typeof item.expense_date === 'string'
+        ? item.expense_date
+        : typeof item.date === 'string'
+        ? item.date
+        : '';
+      const parsedDate = parseScannedDate(rawDateInput, currentYear);
+
+      // Notes & reference ID
+      const notes = typeof item.notes === 'string' ? item.notes.trim().slice(0, 255) : '';
+      const referenceId = typeof item.reference_id === 'string' ? item.reference_id.trim().slice(0, 100) : '';
+
+      // Determine confidence / readiness:
+      // A transaction is ONLY ready if amount > 0, merchant is non-empty, and date is confident & verified
+      const isComplete = hasValidAmount && hasValidMerchant && parsedDate.is_date_confident && Boolean(parsedDate.date);
+
+      const reviewReasons = [];
+      if (amountReviewReason) reviewReasons.push(amountReviewReason);
+      if (merchantReviewReason) reviewReasons.push(merchantReviewReason);
+      if (parsedDate.date_review_reason) reviewReasons.push(parsedDate.date_review_reason);
+
+      return {
+        amount: cleanAmount,
+        merchant,
+        category,
+        expense_date: parsedDate.date, // Preserved or empty — never silently defaulted to todayStr
+        notes,
+        reference_id: referenceId,
+        confidence: isComplete ? 'high' : 'needs_review',
+        is_ready: isComplete,
+        is_date_confident: parsedDate.is_date_confident,
+        date_review_reason: parsedDate.date_review_reason,
+        amount_review_reason: amountReviewReason,
+        merchant_review_reason: merchantReviewReason,
+        review_reasons: reviewReasons,
+      };
+    })
+    .filter(Boolean);
+
+  const isValidTransaction = rawParsed.is_valid_transaction !== false && normalizedTransactions.length > 0;
+  const detectedType = rawParsed.type || (normalizedTransactions.length > 1 ? 'statement_history' : 'single_receipt');
+
+  const primaryTx = normalizedTransactions[0] || {
+    amount: 0,
+    merchant: '',
+    category: 'Miscellaneous',
+    expense_date: '',
+    notes: '',
+    reference_id: '',
+    confidence: 'needs_review',
+    is_ready: false,
+    is_date_confident: false,
+    date_review_reason: 'Date unclear or not visible — please confirm',
+    amount_review_reason: 'Amount not confidently detected',
+    merchant_review_reason: 'Merchant name needs review',
+    review_reasons: ['Date unclear or not visible — please confirm'],
+  };
+
+  return {
+    is_valid_transaction: isValidTransaction,
+    type: detectedType,
+    transactions: normalizedTransactions,
+    transaction_count: normalizedTransactions.length,
+    // Top-level aliases for backward compatibility:
+    amount: primaryTx.amount,
+    merchant: primaryTx.merchant,
+    category: primaryTx.category,
+    expense_date: primaryTx.expense_date,
+    notes: primaryTx.notes,
+    confidence: primaryTx.confidence,
+    is_ready: primaryTx.is_ready,
+    is_date_confident: primaryTx.is_date_confident,
+    date_review_reason: primaryTx.date_review_reason,
+    review_reasons: primaryTx.review_reasons,
+  };
+};
+
+/**
+ * Checks for potential duplicate transactions within the current scan batch or existing expenses.
+ * Uses cautious comparison based on reference IDs, merchant, amount, and date proximity (up to 14 days)
+ * to handle overlapping statement history screenshots.
+ * Returns a descriptive warning string if a duplicate is suspected, or null otherwise.
+ * Does not block or discard legitimate transactions.
+ */
+export const checkTransactionDuplicate = (item, allItems = [], existingExpenses = []) => {
+  if (!item || item.amount === undefined || item.amount === null) return null;
+  const numAmount = parseFloat(item.amount);
+  if (isNaN(numAmount) || numAmount <= 0) return null;
+
+  const cleanMerchant = (item.merchant || '').trim().toLowerCase();
+  const dateStr = item.expense_date;
+
+  // 1. Check duplicate reference ID (e.g. UTR / UPI Ref ID) within batch
+  if (item.reference_id && item.reference_id.trim()) {
+    const cleanRef = item.reference_id.trim();
+    const matchingRefBatch = allItems.find(
+      (other) => other.id !== item.id && other.reference_id && other.reference_id.trim() === cleanRef
+    );
+    if (matchingRefBatch) {
+      return `Identical transaction reference (${cleanRef}) found in current scan session.`;
+    }
+  }
+
+  if (!cleanMerchant) return null;
+
+  const parseDateMs = (d) => {
+    if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return null;
+    return new Date(d).getTime();
+  };
+  const itemDateMs = parseDateMs(dateStr);
+
+  // 2. Check within current batch items: same amount & merchant
+  for (const other of allItems) {
+    if (other.id === item.id) continue;
+    const otherMerchant = (other.merchant || '').trim().toLowerCase();
+    const otherAmt = parseFloat(other.amount);
+    if (isNaN(otherAmt) || otherAmt <= 0) continue;
+
+    const isSameAmount = Math.abs(otherAmt - numAmount) < 0.01;
+    const isSameMerchant = otherMerchant === cleanMerchant;
+
+    if (isSameAmount && isSameMerchant) {
+      if (other.expense_date && dateStr && other.expense_date === dateStr) {
+        return 'Possible duplicate: same amount, merchant, and date detected in this scan session.';
+      }
+      const otherDateMs = parseDateMs(other.expense_date);
+      if (itemDateMs && otherDateMs) {
+        const diffDays = Math.abs(itemDateMs - otherDateMs) / (1000 * 60 * 60 * 24);
+        if (diffDays <= 14) {
+          return `Possible duplicate: identical ₹${numAmount} at ${item.merchant} detected in this session on ${other.expense_date}.`;
+        }
+      } else {
+        return `Possible duplicate: matches another ₹${numAmount} at ${item.merchant} in this scan session.`;
+      }
+    }
+  }
+
+  // 3. Check against existing saved expenses in DB: same amount & merchant
+  for (const exp of existingExpenses) {
+    const expMerchant = (exp.merchant || '').trim().toLowerCase();
+    const expAmt = parseFloat(exp.amount);
+    if (isNaN(expAmt) || expAmt <= 0) continue;
+
+    const isSameAmount = Math.abs(expAmt - numAmount) < 0.01;
+    const isSameMerchant = expMerchant === cleanMerchant;
+
+    if (isSameAmount && isSameMerchant) {
+      if (exp.expense_date && dateStr && exp.expense_date === dateStr) {
+        return `Possible duplicate: matches an expense already saved on ${exp.expense_date}.`;
+      }
+      const expDateMs = parseDateMs(exp.expense_date);
+      if (itemDateMs && expDateMs) {
+        const diffDays = Math.abs(itemDateMs - expDateMs) / (1000 * 60 * 60 * 24);
+        if (diffDays <= 14) {
+          return `Possible duplicate: matches ₹${numAmount} at ${exp.merchant} already saved on ${exp.expense_date} (compare screenshots).`;
+        }
+      } else if (!dateStr) {
+        return `Possible duplicate: matches ₹${numAmount} at ${exp.merchant} already saved on ${exp.expense_date}.`;
+      }
+    }
+  }
+
+  return null;
+};
+
 /**
  * Extracts structured expense information from a payment screenshot or paper receipt using Gemini Vision
  */
@@ -685,20 +1127,48 @@ export const extractExpenseFromReceiptImage = async ({ imageBase64, mimeType = '
 
   const todayStr = new Date().toISOString().slice(0, 10);
 
-  const prompt = `You are an AI financial receipt & UPI payment scanner.
-Carefully examine this image (which may be a Google Pay, PhonePe, Paytm, or bank UPI transaction confirmation screenshot, or a printed receipt / bill).
-Extract the transaction details into a JSON object matching this schema:
+  const prompt = `You are an expert AI financial scanner specialized in UPI receipts and statement transaction histories (Google Pay, PhonePe, Paytm, CRED, BHIM, bank apps, and printed receipts/invoices).
+
+Carefully examine this image. It can be:
+1. A SINGLE TRANSACTION RECEIPT (e.g. "Paid to Swiggy ₹150", "Payment Successful").
+2. A TRANSACTION HISTORY / STATEMENT SCREENSHOT showing multiple individual payments/debits (e.g. a list of 2 to 10 payments).
+
+TASK:
+Extract all visible paid expenses/debits into a JSON object matching this schema:
 {
-  "is_valid_transaction": boolean (true if this contains a payment or bill, false if unrelated photo),
-  "amount": number (positive amount paid in Indian Rupees, e.g. 150.00),
-  "merchant": string (clean store, recipient, or business name, e.g. "Swiggy", "Apollo Pharmacy", "Indian Oil", "DMart", "Zomato", "Uber"),
-  "category": string (MUST be one of: "Food & Dining", "Transportation", "Shopping", "Entertainment", "Healthcare", "Utilities", "Housing", "Personal Care", "Miscellaneous"),
-  "expense_date": string (in "YYYY-MM-DD" format. If only day/month is visible, use year 2026. If date is not visible, use "${todayStr}"),
-  "notes": string (brief context, e.g. "Google Pay payment to Swiggy", "Pharmacy purchase")
+  "is_valid_transaction": boolean,
+  "type": "single_receipt" | "statement_history" | "unrelated",
+  "transactions": [
+    {
+      "amount": number,
+      "merchant": string,
+      "category": string,
+      "expense_date": string,
+      "notes": string,
+      "confidence": "high" | "needs_review",
+      "reference_id": string
+    }
+  ]
 }
 
-If amount is ambiguous, look for the main bold paid number (e.g. ₹250 or Rs 250).
-Output ONLY the raw JSON object. No explanation, no markdown backticks.`;
+FIELD REQUIREMENTS:
+- "is_valid_transaction": true if at least one payment/expense/bill is visible; false if unrelated photo or completely unreadable.
+- "type": "single_receipt" if the image shows one payment confirmation; "statement_history" if it lists multiple payments; "unrelated" if not financial.
+- "amount": positive number paid in Indian Rupees (e.g. 150.00). Must be an actual payment/debit amount.
+- "merchant": clean store, recipient, or business name (e.g. "Swiggy", "Apollo Pharmacy", "Indian Oil", "DMart", "Zomato", "Uber", "Ramesh Kumar"). If unreadable or missing, provide empty string "".
+- "category": MUST be one of: "Food & Dining", "Transportation", "Shopping", "Entertainment", "Healthcare", "Utilities", "Housing", "Personal Care", "Miscellaneous".
+- "expense_date": extracted transaction date in "YYYY-MM-DD" format (e.g. "2026-10-16"). If only day and month are visible (e.g. "16 Oct", "19 Oct"), infer year 2026. If the date is obscured, unreadable, or missing, return empty string "". If a relative label is visible (e.g. "1 min ago", "Yesterday"), return that text. NEVER invent or assume today's date if not clearly visible.
+- "notes": brief context, payment mode, or purpose (e.g. "Google Pay payment to Swiggy", "Fuel payment").
+- "confidence": "high" if amount, merchant, and date are all clearly readable; "needs_review" if any critical field is blurry, uncertain, or missing.
+- "reference_id": UPI Ref ID, UTR number, or transaction ID if clearly visible, otherwise "".
+
+CRITICAL EXTRACTION RULES:
+- If the image contains a TRANSACTION HISTORY with multiple payments, extract EACH individual paid transaction as a separate object in "transactions". Do NOT combine them.
+- If the image contains a SINGLE payment receipt, return an array of exactly 1 item in "transactions".
+- Distinguish individual payments from monthly totals, summary figures, or account balances. IGNORE account balances, refunds/credits, or card limits.
+- Avoid interpreting transaction IDs, UTRs, balances, or monthly totals as expense amounts.
+- Do NOT invent or hallucinate missing information or today's date. If a date or merchant is cropped or obscured, return "" for that field so the user can review it.
+- Output ONLY the raw JSON object. No explanation, no markdown backticks.`;
 
   let lastError = null;
 
@@ -736,31 +1206,15 @@ Output ONLY the raw JSON object. No explanation, no markdown backticks.`;
           .replace(/^```\s*/i, '')
           .replace(/```$/i, '')
           .trim();
-        const parsed = JSON.parse(cleanedJson);
-
-        // Normalize category
-        const VALID_CATEGORIES = [
-          'Housing',
-          'Transportation',
-          'Food & Dining',
-          'Utilities',
-          'Entertainment',
-          'Healthcare',
-          'Shopping',
-          'Personal Care',
-          'Miscellaneous',
-        ];
-        if (!VALID_CATEGORIES.includes(parsed.category)) {
-          parsed.category = 'Miscellaneous';
+        let parsed;
+        try {
+          parsed = JSON.parse(cleanedJson);
+        } catch (jsonErr) {
+          console.warn(`JSON parse error from vision model ${model}:`, jsonErr.message);
+          throw new Error('AI output was not valid JSON.');
         }
 
-        // Validate amount
-        parsed.amount = Number(parsed.amount || 0);
-
-        return {
-          ...parsed,
-          model_used: model,
-        };
+        return normalizeScannedTransactions(parsed, model, todayStr);
       }
     } catch (err) {
       lastError = err;
@@ -775,4 +1229,6 @@ export default {
   generateFinancialReport,
   chatWithFinancialAdvisor,
   extractExpenseFromReceiptImage,
+  normalizeScannedTransactions,
+  checkTransactionDuplicate,
 };

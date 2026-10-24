@@ -60,6 +60,8 @@ function App() {
                   <Route path="/calendar" element={<CalendarPage />} />
                   <Route path="/expenses" element={<ExpenseListPage />} />
                   <Route path="/expenses/new" element={<AddExpensePage />} />
+                  <Route path="/expenses/add" element={<AddExpensePage />} />
+                  <Route path="/add-expense" element={<AddExpensePage />} />
                   <Route path="/expenses/:id/edit" element={<EditExpensePage />} />
                   <Route path="/insights" element={<InsightsPage />} />
                   {/* Admin Only Route */}

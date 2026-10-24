@@ -1,6 +1,5 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  IndianRupee,
   Store,
   Tag,
   Calendar,
@@ -10,17 +9,14 @@ import {
   Loader2,
   AlertCircle,
   Clock,
-  Sparkles,
   Trash2,
   ZoomIn,
   X,
-  Plus,
-  Eye,
   CheckCircle2,
   UploadCloud,
-  ImageIcon,
-  Camera,
+  ShieldAlert,
 } from 'lucide-react';
+import { checkTransactionDuplicate } from '../utils/scannerUtils.js';
 
 const CATEGORIES = [
   'Food & Dining',
@@ -48,252 +44,159 @@ const CATEGORY_COLORS = {
 
 export const BatchReceiptScannerTable = ({
   items = [],
+  existingExpenses = [],
   onUpdateItem,
   onRemoveItem,
   onSaveItem,
   onSaveAll,
-  onAddMoreFiles,
-  onAddManualRow,
   onClearAll,
   isBatchSaving = false,
-  overallProgress = { total: 0, completed: 0, current: 0, percent: 0 },
 }) => {
   const [lightboxItem, setLightboxItem] = useState(null);
-  const addFilesInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'ready' | 'needs_review' | 'saved'
 
-  // Statistics
-  const { totalAmount, readyCount, savedCount, scanningCount, queuedCount, errorCount } = useMemo(() => {
-    let amt = 0;
+  // Summary counts
+  const { readyCount, needsReviewCount, savedCount, totalDetectedAmount } = useMemo(() => {
     let ready = 0;
+    let needsReview = 0;
     let saved = 0;
-    let scanning = 0;
-    let queued = 0;
-    let errors = 0;
+    let totalAmt = 0;
 
-    items.forEach((item) => {
-      const val = parseFloat(item.amount);
-      if (!isNaN(val) && val > 0) amt += val;
+    items.forEach((it) => {
+      const amt = parseFloat(it.amount);
+      if (!isNaN(amt) && amt > 0) totalAmt += amt;
 
-      if (item.saved) saved++;
-      else if (item.status === 'done') ready++;
-      else if (item.status === 'scanning') scanning++;
-      else if (item.status === 'queued') queued++;
-      else if (item.status === 'error') errors++;
+      const hasMerchant = Boolean(it.merchant?.trim());
+      const hasValidDate = Boolean(it.expense_date && /^\d{4}-\d{2}-\d{2}$/.test(it.expense_date));
+      const isItemReady = (it.is_ready || it.status === 'ready') && amt > 0 && hasMerchant && hasValidDate;
+
+      if (it.saved) {
+        saved++;
+      } else if (isItemReady) {
+        ready++;
+      } else if (it.status !== 'queued' && it.status !== 'scanning') {
+        needsReview++;
+      }
     });
 
     return {
-      totalAmount: amt,
       readyCount: ready,
+      needsReviewCount: needsReview,
       savedCount: saved,
-      scanningCount: scanning,
-      queuedCount: queued,
-      errorCount: errors,
+      totalDetectedAmount: totalAmt,
     };
   }, [items]);
 
-  const allCompleted = items.length > 0 && scanningCount === 0 && queuedCount === 0;
+  // Filtered items
+  const filteredItems = useMemo(() => {
+    if (activeFilter === 'ready') {
+      return items.filter(
+        (it) =>
+          !it.saved &&
+          (it.is_ready || it.status === 'ready') &&
+          parseFloat(it.amount) > 0 &&
+          it.merchant?.trim() &&
+          it.expense_date &&
+          /^\d{4}-\d{2}-\d{2}$/.test(it.expense_date)
+      );
+    }
+    if (activeFilter === 'needs_review') {
+      return items.filter(
+        (it) =>
+          !it.saved &&
+          it.status !== 'queued' &&
+          it.status !== 'scanning' &&
+          (!it.is_ready ||
+            !it.merchant?.trim() ||
+            !parseFloat(it.amount) ||
+            !it.expense_date ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(it.expense_date))
+      );
+    }
+    if (activeFilter === 'saved') {
+      return items.filter((it) => it.saved);
+    }
+    return items;
+  }, [items, activeFilter]);
 
   return (
     <div className="space-y-4">
-      {/* Hidden File / Camera Inputs */}
-      <input
-        ref={addFilesInputRef}
-        type="file"
-        multiple
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          if (e.target.files && e.target.files.length > 0) {
-            onAddMoreFiles(Array.from(e.target.files));
-            e.target.value = '';
-          }
-        }}
-      />
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={(e) => {
-          if (e.target.files && e.target.files[0]) {
-            onAddMoreFiles(Array.from(e.target.files));
-            e.target.value = '';
-          }
-        }}
-      />
+      {/* Table Card Container */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        {/* Table Header Toolbar */}
+        <div className="p-3.5 sm:p-4 bg-slate-50/80 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Left: Filter Pills */}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="font-bold text-slate-800 mr-1 hidden sm:inline">
+              Extracted Transactions:
+            </span>
 
-      {/* Top Batch HUD / Status Banner */}
-      <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 rounded-2xl p-4 sm:p-5 text-white shadow-lg border border-indigo-700/50 relative overflow-hidden">
-        {/* Glow ambient background */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                Multi-Receipt AI Batch Scanner
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
-                  Gemini Stream
-                </span>
-              </h2>
-            </div>
-            <p className="text-xs text-indigo-200 mt-1 max-w-xl">
-              {items.length === 0
-                ? 'Upload your UPI screenshots, photos, or bills. Gemini AI scans each one sequentially and fills the review table below in real-time.'
-                : allCompleted
-                ? `All ${items.length} receipt${items.length > 1 ? 's' : ''} scanned! Review extracted fields below and click Save beside any row or Save All.`
-                : `Scanning receipts one-by-one with Gemini AI. Data streams live into the table as each receipt is finished.`}
-            </p>
-          </div>
-
-          {/* Quick HUD Metrics */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <div className="px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 text-center min-w-[70px]">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-indigo-200 block">Total</span>
-              <span className="text-sm font-bold text-white">{items.length} receipts</span>
-            </div>
-
-            <div className="px-3 py-1.5 rounded-xl bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 text-center min-w-[80px]">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-200 block">Detected</span>
-              <span className="text-sm font-bold text-emerald-300">
-                ₹{totalAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-              </span>
-            </div>
-
-            <div className="px-3 py-1.5 rounded-xl bg-indigo-500/20 backdrop-blur-md border border-indigo-400/30 text-center min-w-[70px]">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-indigo-200 block">Saved</span>
-              <span className="text-sm font-bold text-indigo-200">{savedCount} / {items.length}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Dynamic Progress Bar (when items are loaded) */}
-        {items.length > 0 && (
-          <div className="mt-4 pt-3 border-t border-indigo-800/60">
-            <div className="flex items-center justify-between text-xs text-indigo-200 mb-1.5">
-              <div className="flex items-center space-x-2 font-medium">
-                {scanningCount > 0 ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-300" />
-                    <span className="text-amber-200">
-                      Scanning receipt #{overallProgress.current} of {overallProgress.total}...
-                    </span>
-                  </>
-                ) : allCompleted ? (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-emerald-300 font-semibold">
-                      100% Scanned ({items.length} processed)
-                    </span>
-                  </>
-                ) : (
-                  <span>Queue loaded: {items.length} images</span>
-                )}
-              </div>
-              <div className="text-[11px] font-mono font-bold text-indigo-200">
-                {overallProgress.percent}%
-              </div>
-            </div>
-
-            <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden border border-white/10 p-0.5">
-              <div
-                className="bg-gradient-to-r from-amber-400 via-indigo-400 to-emerald-400 h-full rounded-full transition-all duration-500 shadow-sm"
-                style={{ width: `${Math.max(4, overallProgress.percent)}%` }}
-              />
-            </div>
-
-            {/* Status Breakdown Pills */}
-            <div className="flex flex-wrap items-center gap-2 mt-3 text-[11px]">
-              {savedCount > 0 && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  <Check className="w-3 h-3 mr-1" />
-                  {savedCount} Saved
-                </span>
-              )}
-              {readyCount > 0 && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30">
-                  <CheckCircle2 className="w-3 h-3 mr-1" />
-                  {readyCount} Ready to Save
-                </span>
-              )}
-              {scanningCount > 0 && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse">
-                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                  {scanningCount} Scanning Now
-                </span>
-              )}
-              {queuedCount > 0 && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-700/60 text-slate-300 border border-slate-600/50">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {queuedCount} Queued
-                </span>
-              )}
-              {errorCount > 0 && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  {errorCount} Need Manual Check
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Action Toolbar */}
-        <div className="mt-4 pt-3 border-t border-indigo-800/60 flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => addFilesInputRef.current?.click()}
-              className="inline-flex items-center px-3.5 py-1.5 rounded-xl bg-white text-indigo-950 text-xs font-bold hover:bg-indigo-50 transition-all cursor-pointer shadow-sm"
+              onClick={() => setActiveFilter('all')}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                activeFilter === 'all'
+                  ? 'bg-indigo-600 text-white shadow-2xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
             >
-              <ImageIcon className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
-              Upload Screenshots (1 or Multiple)
+              All ({items.length})
             </button>
 
             <button
               type="button"
-              onClick={() => cameraInputRef.current?.click()}
-              className="inline-flex items-center px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold border border-white/20 transition-all cursor-pointer"
+              onClick={() => setActiveFilter('ready')}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                activeFilter === 'ready'
+                  ? 'bg-emerald-600 text-white shadow-2xs'
+                  : 'bg-white text-emerald-700 hover:bg-emerald-50 border border-slate-200'
+              }`}
             >
-              <Camera className="w-3.5 h-3.5 mr-1.5 text-amber-300" />
-              Take Photo
+              Ready to Save ({readyCount})
             </button>
 
-            <button
-              type="button"
-              onClick={onAddManualRow}
-              className="inline-flex items-center px-3 py-1.5 rounded-xl bg-indigo-500/30 hover:bg-indigo-500/50 text-indigo-100 text-xs font-semibold border border-indigo-400/30 transition-all cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              Add Manual Row
-            </button>
-
-            {items.length > 0 && (
+            {needsReviewCount > 0 && (
               <button
                 type="button"
-                onClick={onClearAll}
-                className="inline-flex items-center px-3 py-1.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-300 hover:text-rose-200 text-xs font-medium border border-white/10 transition-colors cursor-pointer"
+                onClick={() => setActiveFilter('needs_review')}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                  activeFilter === 'needs_review'
+                    ? 'bg-amber-600 text-white shadow-2xs'
+                    : 'bg-white text-amber-700 hover:bg-amber-50 border border-slate-200'
+                }`}
               >
-                Clear All
+                Needs Review ({needsReviewCount})
+              </button>
+            )}
+
+            {savedCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveFilter('saved')}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                  activeFilter === 'saved'
+                    ? 'bg-slate-800 text-white shadow-2xs'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                Saved ({savedCount})
               </button>
             )}
           </div>
 
-          {items.length > 0 && (
-            <div className="flex items-center space-x-2">
+          {/* Right: Actions */}
+          <div className="flex items-center space-x-2 self-end sm:self-auto">
+            {readyCount > 0 && (
               <button
                 type="button"
                 onClick={onSaveAll}
-                disabled={readyCount === 0 || isBatchSaving}
-                className="inline-flex items-center px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed shadow-md shadow-amber-900/30 transition-all cursor-pointer"
+                disabled={isBatchSaving}
+                className="inline-flex items-center px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed shadow-xs transition-all cursor-pointer"
               >
                 {isBatchSaving ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                    Saving All Ready...
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    Saving Ready...
                   </>
                 ) : (
                   <>
@@ -302,102 +205,104 @@ export const BatchReceiptScannerTable = ({
                   </>
                 )}
               </button>
-            </div>
-          )}
-        </div>
-      </div>
+            )}
 
-      {/* Progressive Scanned Results Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden">
+            {items.length > 0 && (
+              <button
+                type="button"
+                onClick={onClearAll}
+                className="px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Scrollable Table View */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                <th className="py-3 px-3.5 w-16 text-center"># / Image</th>
-                <th className="py-3 px-3 min-w-[170px]">Merchant / Payee</th>
-                <th className="py-3 px-3 min-w-[120px]">Amount (₹)</th>
+              <tr className="bg-slate-50/50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                <th className="py-3 px-3.5 w-24 text-center">Receipt Image</th>
+                <th className="py-3 px-3 min-w-[130px]">Status</th>
+                <th className="py-3 px-3 min-w-[170px]">Merchant / Payee *</th>
+                <th className="py-3 px-3 min-w-[130px]">Amount (₹) *</th>
                 <th className="py-3 px-3 min-w-[150px]">Category</th>
-                <th className="py-3 px-3 min-w-[130px]">Date</th>
-                <th className="py-3 px-3 min-w-[160px]">Notes</th>
-                <th className="py-3 px-3 text-center min-w-[140px]">Status & Action</th>
+                <th className="py-3 px-3 min-w-[130px]">Date *</th>
+                <th className="py-3 px-3 min-w-[160px]">Notes & Ref ID</th>
+                <th className="py-3 px-3 text-center min-w-[120px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
-              {items.length === 0 ? (
-                /* Empty state inside the table */
+              {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 px-4 text-center">
-                    <div className="max-w-md mx-auto flex flex-col items-center space-y-3">
+                  <td colSpan={8} className="py-12 px-4 text-center">
+                    <div className="max-w-md mx-auto flex flex-col items-center space-y-2.5 text-center">
                       <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-                        <UploadCloud className="w-6 h-6 animate-pulse" />
+                        <UploadCloud className="w-6 h-6 text-indigo-500" />
                       </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-slate-800">Review Table Is Ready</h4>
-                        <p className="text-xs text-slate-500 mt-1">
-                          Click <strong>"Upload Screenshots"</strong> above or drag & drop 1 or multiple receipt images here. Each will be scanned and appear in this table!
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                        <button
-                          type="button"
-                          onClick={() => addFilesInputRef.current?.click()}
-                          className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
-                        >
-                          Select Receipts
-                        </button>
-                        <button
-                          type="button"
-                          onClick={onAddManualRow}
-                          className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
-                        >
-                          + Add Empty Row
-                        </button>
-                      </div>
+                      <h4 className="text-sm font-bold text-slate-800">
+                        {items.length === 0
+                          ? 'No transactions scanned yet'
+                          : 'No transactions match this filter'}
+                      </h4>
+                      <p className="text-xs text-slate-500 max-w-sm">
+                        {items.length === 0
+                          ? 'Upload individual receipts or screenshots containing multiple transactions above to extract details.'
+                          : 'Switch to the "All" tab to view all extracted transactions.'}
+                      </p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                items.map((item, idx) => {
+                filteredItems.map((item, idx) => {
                   const isScanning = item.status === 'scanning';
                   const isQueued = item.status === 'queued';
-                  const isDone = item.status === 'done';
-                  const isError = item.status === 'error';
                   const isSaved = item.saved;
                   const isSaving = item.saving;
+                  const amt = parseFloat(item.amount);
+                  const hasMerchant = Boolean(item.merchant?.trim());
+                  const hasValidAmount = !isNaN(amt) && amt > 0;
+                  const hasValidDate = Boolean(item.expense_date && /^\d{4}-\d{2}-\d{2}$/.test(item.expense_date));
+                  const isReady = (item.is_ready || item.status === 'ready') && hasMerchant && hasValidAmount && hasValidDate;
+                  const isNeedsReview = !isSaved && !isScanning && !isQueued && !isReady;
+
+                  // Duplicate check
+                  const duplicateWarning = checkTransactionDuplicate(item, items, existingExpenses);
 
                   return (
                     <tr
                       key={item.id}
-                      className={`transition-colors duration-200 ${
+                      className={`transition-colors duration-150 ${
                         item.flashSuccess ? 'animate-row-flash' : ''
                       } ${
                         isSaved
-                          ? 'bg-emerald-50/30 hover:bg-emerald-50/50'
+                          ? 'bg-emerald-50/20 hover:bg-emerald-50/40'
                           : isScanning
                           ? 'bg-amber-50/30'
+                          : isNeedsReview
+                          ? 'bg-amber-50/15 hover:bg-amber-50/30'
                           : 'hover:bg-slate-50/80'
                       }`}
                     >
-                      {/* 1. S.No & Thumbnail Preview */}
+                      {/* 1. Source Image Thumbnail & Association */}
                       <td className="py-3 px-3.5 text-center align-middle">
                         <div className="flex flex-col items-center justify-center space-y-1">
-                          <span className="text-[10px] font-bold text-slate-400 font-mono">
-                            #{idx + 1}
-                          </span>
                           <div
                             onClick={() => item.preview && setLightboxItem(item)}
-                            className={`relative group w-11 h-11 rounded-lg overflow-hidden border border-slate-200 shadow-2xs flex-shrink-0 bg-slate-100 flex items-center justify-center ${
-                              item.preview ? 'cursor-pointer' : ''
+                            className={`relative group w-11 h-11 rounded-xl overflow-hidden border border-slate-200 shadow-2xs flex-shrink-0 bg-slate-100 flex items-center justify-center ${
+                              item.preview ? 'cursor-pointer hover:border-indigo-400' : ''
                             }`}
-                            title={item.preview ? 'Click to view full receipt screenshot' : 'Manual entry'}
+                            title={item.preview ? 'Click to inspect original screenshot' : 'Manual entry'}
                           >
                             {item.preview ? (
                               <>
                                 <img
                                   src={item.preview}
-                                  alt={`Receipt ${idx + 1}`}
+                                  alt={`Screenshot ${idx + 1}`}
                                   className={`w-full h-full object-cover transition-transform group-hover:scale-110 ${
-                                    isScanning ? 'opacity-60 scale-105 animate-pulse' : ''
+                                    isScanning ? 'opacity-50 animate-pulse' : ''
                                   }`}
                                 />
                                 <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
@@ -405,78 +310,167 @@ export const BatchReceiptScannerTable = ({
                                 </div>
                               </>
                             ) : (
-                              <FileText className="w-5 h-5 text-indigo-500" />
+                              <FileText className="w-5 h-5 text-indigo-400" />
                             )}
                           </div>
+
+                          {/* Multi-transaction association pill */}
+                          {item.totalFromImage > 1 ? (
+                            <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200/60 px-1.5 py-0.2 rounded-md">
+                              Tx {item.itemIndex}/{item.totalFromImage}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-semibold text-slate-400">
+                              #{idx + 1}
+                            </span>
+                          )}
                         </div>
                       </td>
 
-                      {/* 2. Merchant / Payee */}
+                      {/* 2. Extraction & Review Status */}
+                      <td className="py-3 px-3 align-middle">
+                        <div className="flex flex-col items-start space-y-1">
+                          {isQueued && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                              <Clock className="w-3 h-3 mr-1" />
+                              Queued
+                            </span>
+                          )}
+
+                          {isScanning && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin text-amber-600" />
+                              Scanning...
+                            </span>
+                          )}
+
+                          {isSaved && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                              <Check className="w-3 h-3 mr-1" />
+                              Saved
+                            </span>
+                          )}
+
+                          {isReady && !isSaved && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <CheckCircle2 className="w-3 h-3 mr-1" />
+                              Ready
+                            </span>
+                          )}
+
+                          {isNeedsReview && !isScanning && !isQueued && (
+                            <span
+                              className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200"
+                              title={item.error || 'Please review highlighted fields before saving'}
+                            >
+                              <AlertCircle className="w-3 h-3 mr-1 text-amber-600" />
+                              Needs Review
+                            </span>
+                          )}
+
+                          {/* Duplicate alert pill */}
+                          {duplicateWarning && (
+                            <span
+                              className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-rose-50 text-rose-700 border border-rose-200/80 cursor-help"
+                              title={duplicateWarning}
+                            >
+                              <ShieldAlert className="w-2.5 h-2.5 mr-1 flex-shrink-0" />
+                              <span className="truncate max-w-[110px]">Possible duplicate</span>
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* 3. Merchant / Payee */}
                       <td className="py-3 px-3 align-middle">
                         {isQueued ? (
                           <div className="h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center px-2.5 text-slate-400 italic text-[11px]">
-                            Waiting in queue...
+                            Waiting...
                           </div>
                         ) : isScanning ? (
-                          <div className="h-8 rounded-lg animate-shimmer-sweep border border-indigo-200/80 flex items-center px-2.5 space-x-1.5 text-indigo-700 text-[11px] font-medium">
+                          <div className="h-8 rounded-lg bg-indigo-50/50 border border-indigo-100 flex items-center px-2.5 space-x-1.5 text-indigo-700 text-[11px] animate-pulse">
                             <Loader2 className="w-3 h-3 animate-spin flex-shrink-0" />
                             <span className="truncate">Reading payee...</span>
                           </div>
                         ) : (
-                          <div className="relative">
-                            <Store className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                            <input
-                              type="text"
-                              value={item.merchant || ''}
-                              disabled={isSaved}
-                              onChange={(e) => onUpdateItem(item.id, { merchant: e.target.value })}
-                              placeholder="Store or Payee"
-                              className="w-full pl-8 pr-2 py-1.5 text-xs font-semibold text-slate-800 bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-50 disabled:text-slate-500 transition-shadow"
-                            />
+                          <div className="space-y-1">
+                            <div className="relative">
+                              <Store className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                              <input
+                                type="text"
+                                value={item.merchant || ''}
+                                disabled={isSaved}
+                                onChange={(e) => onUpdateItem(item.id, { merchant: e.target.value })}
+                                placeholder="Required (Store / Payee)"
+                                className={`w-full pl-8 pr-2 py-1.5 text-xs font-semibold rounded-lg border transition-all focus:outline-hidden focus:ring-2 disabled:bg-slate-50 disabled:text-slate-500 ${
+                                  !hasMerchant && !isSaved
+                                    ? 'border-amber-300 bg-amber-50/40 text-amber-950 focus:ring-amber-500'
+                                    : 'border-slate-200 bg-white text-slate-900 focus:ring-indigo-500'
+                                }`}
+                              />
+                            </div>
+                            {!hasMerchant && !isSaved && (
+                              <div className="text-[10px] text-amber-700 font-medium flex items-center">
+                                <AlertCircle className="w-2.5 h-2.5 mr-1 flex-shrink-0 text-amber-600" />
+                                <span className="truncate">Merchant name needs review</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </td>
 
-                      {/* 3. Amount (₹) */}
+                      {/* 4. Amount (₹) */}
                       <td className="py-3 px-3 align-middle">
                         {isQueued ? (
                           <div className="h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center px-2.5 text-slate-400 italic text-[11px]">
                             —
                           </div>
                         ) : isScanning ? (
-                          <div className="h-8 rounded-lg animate-shimmer-sweep border border-amber-200/80 flex items-center px-2.5 space-x-1 text-amber-700 text-[11px] font-medium">
+                          <div className="h-8 rounded-lg bg-amber-50/50 border border-amber-100 flex items-center px-2.5 space-x-1 text-amber-700 text-[11px] animate-pulse">
                             <Loader2 className="w-3 h-3 animate-spin flex-shrink-0" />
                             <span>Detecting ₹...</span>
                           </div>
                         ) : (
-                          <div className="relative">
-                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">
-                              ₹
-                            </span>
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0.01"
-                              value={item.amount || ''}
-                              disabled={isSaved}
-                              onChange={(e) => onUpdateItem(item.id, { amount: e.target.value })}
-                              placeholder="0.00"
-                              className="w-full pl-6 pr-2 py-1.5 text-xs font-bold text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-50 disabled:text-slate-500 transition-shadow"
-                            />
+                          <div className="space-y-1">
+                            <div className="relative">
+                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">
+                                ₹
+                              </span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                value={item.amount || ''}
+                                disabled={isSaved}
+                                onChange={(e) => onUpdateItem(item.id, { amount: e.target.value })}
+                                placeholder="0.00"
+                                className={`w-full pl-6 pr-2 py-1.5 text-xs font-bold rounded-lg border transition-all focus:outline-hidden focus:ring-2 disabled:bg-slate-50 disabled:text-slate-500 ${
+                                  !hasValidAmount && !isSaved
+                                    ? 'border-amber-300 bg-amber-50/40 text-amber-950 focus:ring-amber-500'
+                                    : 'border-slate-200 bg-white text-slate-900 focus:ring-indigo-500'
+                                }`}
+                              />
+                            </div>
+                            {!hasValidAmount && !isSaved && (
+                              <div className="text-[10px] text-amber-700 font-medium flex items-center">
+                                <AlertCircle className="w-2.5 h-2.5 mr-1 flex-shrink-0 text-amber-600" />
+                                <span className="truncate">Amount not confidently detected</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </td>
 
-                      {/* 4. Category */}
+                      {/* 5. Category */}
                       <td className="py-3 px-3 align-middle">
                         {isQueued ? (
                           <div className="h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center px-2.5 text-slate-400 italic text-[11px]">
                             —
                           </div>
                         ) : isScanning ? (
-                          <div className="h-8 rounded-lg animate-shimmer-sweep border border-indigo-200/80 flex items-center px-2.5 text-indigo-700 text-[11px] font-medium">
+                          <div className="h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center px-2.5 text-slate-400 text-[11px]">
                             <Tag className="w-3 h-3 mr-1 animate-pulse" />
-                            <span>Classifying...</span>
+                            <span>Categorizing...</span>
                           </div>
                         ) : (
                           <select
@@ -496,81 +490,92 @@ export const BatchReceiptScannerTable = ({
                         )}
                       </td>
 
-                      {/* 5. Date */}
+                      {/* 6. Date */}
                       <td className="py-3 px-3 align-middle">
                         {isQueued ? (
                           <div className="h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center px-2.5 text-slate-400 italic text-[11px]">
                             —
                           </div>
                         ) : isScanning ? (
-                          <div className="h-8 rounded-lg animate-shimmer-sweep border border-slate-200 flex items-center px-2.5 text-slate-500 text-[11px]">
+                          <div className="h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center px-2.5 text-slate-400 text-[11px]">
                             <Calendar className="w-3 h-3 mr-1 animate-pulse" />
                             <span>Date...</span>
                           </div>
                         ) : (
-                          <input
-                            type="date"
-                            value={item.expense_date || ''}
-                            disabled={isSaved}
-                            onChange={(e) => onUpdateItem(item.id, { expense_date: e.target.value })}
-                            className="w-full py-1.5 px-2 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50 disabled:text-slate-500 cursor-pointer"
-                          />
+                          <div className="space-y-1">
+                            <input
+                              type="date"
+                              value={item.expense_date || ''}
+                              disabled={isSaved}
+                              onChange={(e) => onUpdateItem(item.id, { expense_date: e.target.value })}
+                              className={`w-full py-1.5 px-2 text-xs font-medium rounded-lg border transition-all focus:outline-hidden focus:ring-2 disabled:bg-slate-50 disabled:text-slate-500 cursor-pointer ${
+                                !hasValidDate && !isSaved
+                                  ? 'border-amber-300 bg-amber-50/40 text-amber-950 focus:ring-amber-500'
+                                  : 'border-slate-200 bg-white text-slate-700 focus:ring-indigo-500'
+                              }`}
+                            />
+                            {!hasValidDate && !isSaved && (
+                              <div className="text-[10px] text-amber-700 font-medium flex items-center">
+                                <AlertCircle className="w-2.5 h-2.5 mr-1 flex-shrink-0 text-amber-600" />
+                                <span className="truncate" title={item.date_review_reason || 'Date unclear — please confirm'}>
+                                  {item.date_review_reason || 'Date unclear — please confirm'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </td>
 
-                      {/* 6. Notes */}
+                      {/* 7. Notes & Ref ID */}
                       <td className="py-3 px-3 align-middle">
                         {isQueued ? (
                           <div className="h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center px-2.5 text-slate-400 italic text-[11px]">
                             —
                           </div>
                         ) : isScanning ? (
-                          <div className="h-8 rounded-lg animate-shimmer-sweep border border-slate-200 flex items-center px-2.5 text-slate-500 text-[11px]">
+                          <div className="h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center px-2.5 text-slate-400 text-[11px]">
                             <FileText className="w-3 h-3 mr-1 animate-pulse" />
-                            <span>Context...</span>
+                            <span>Notes...</span>
                           </div>
                         ) : (
-                          <input
-                            type="text"
-                            value={item.notes || ''}
-                            disabled={isSaved}
-                            onChange={(e) => onUpdateItem(item.id, { notes: e.target.value })}
-                            placeholder="Optional memo / UPI note"
-                            className="w-full py-1.5 px-2 text-xs text-slate-600 bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50 disabled:text-slate-400"
-                          />
+                          <div className="space-y-1">
+                            <input
+                              type="text"
+                              value={item.notes || ''}
+                              disabled={isSaved}
+                              onChange={(e) => onUpdateItem(item.id, { notes: e.target.value })}
+                              placeholder="Memo or context"
+                              className="w-full py-1.5 px-2 text-xs text-slate-600 bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50 disabled:text-slate-400"
+                            />
+                            {item.reference_id && (
+                              <span className="text-[10px] font-mono text-slate-400 block truncate" title={`Ref: ${item.reference_id}`}>
+                                Ref: {item.reference_id}
+                              </span>
+                            )}
+                          </div>
                         )}
                       </td>
 
-                      {/* 7. Status & Row Save Action */}
+                      {/* 8. Row Save & Delete Action */}
                       <td className="py-3 px-3 align-middle text-center">
                         <div className="flex items-center justify-center space-x-1.5">
-                          {isQueued && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
-                              <Clock className="w-3 h-3 mr-1" />
-                              Queued
-                            </span>
-                          )}
-
-                          {isScanning && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">
-                              <Loader2 className="w-3 h-3 mr-1 animate-spin text-amber-600" />
-                              Scanning...
-                            </span>
-                          )}
-
                           {isSaved ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300">
                               <Check className="w-3.5 h-3.5 mr-1" />
                               Saved ✓
                             </span>
                           ) : (
-                            (isDone || isError) && (
+                            (!isQueued && !isScanning) && (
                               <button
                                 type="button"
                                 onClick={() => onSaveItem(item.id)}
-                                disabled={isSaving}
-                                title="Save this single expense"
-                                className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed shadow-xs transition-all cursor-pointer"
+                                disabled={isSaving || !hasMerchant || !hasValidAmount || !hasValidDate}
+                                title={
+                                  !hasMerchant || !hasValidAmount || !hasValidDate
+                                    ? 'Confirm merchant, amount, and date before saving'
+                                    : 'Save this single expense'
+                                }
+                                className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed shadow-xs transition-all cursor-pointer"
                               >
                                 {isSaving ? (
                                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -584,25 +589,17 @@ export const BatchReceiptScannerTable = ({
                             )
                           )}
 
-                          {/* Remove Row Button */}
                           {!isSaved && (
                             <button
                               type="button"
                               onClick={() => onRemoveItem(item.id)}
-                              title="Remove this receipt from batch"
+                              title="Remove this row"
                               className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           )}
                         </div>
-
-                        {/* Error or validation hint */}
-                        {isError && !isSaved && (
-                          <div className="text-[10px] text-rose-600 font-medium mt-1">
-                            Manual check needed
-                          </div>
-                        )}
                       </td>
                     </tr>
                   );
@@ -612,44 +609,51 @@ export const BatchReceiptScannerTable = ({
           </table>
         </div>
 
-        {/* Bottom Table Footer Summary */}
+        {/* Bottom Footer Summary */}
         {items.length > 0 && (
-          <div className="p-3.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+          <div className="p-3.5 sm:p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
             <div className="flex items-center space-x-2">
-              <span className="font-semibold text-slate-800">{items.length} Total Receipts:</span>
-              <span>{savedCount} Saved</span>
+              <span className="font-semibold text-slate-900">{items.length} Transactions</span>
               <span>•</span>
-              <span className="text-emerald-700 font-bold">{readyCount} Ready to Save</span>
-              {scanningCount > 0 && (
+              <span className="text-emerald-700 font-bold">{readyCount} Ready</span>
+              {needsReviewCount > 0 && (
                 <>
                   <span>•</span>
-                  <span className="text-amber-700 font-semibold">{scanningCount} Scanning...</span>
+                  <span className="text-amber-700 font-semibold">{needsReviewCount} Incomplete</span>
+                </>
+              )}
+              {savedCount > 0 && (
+                <>
+                  <span>•</span>
+                  <span className="text-slate-700">{savedCount} Saved</span>
                 </>
               )}
             </div>
 
             <div className="flex items-center space-x-3">
-              <span className="font-bold text-slate-900 text-sm">
-                Batch Sum: ₹{totalAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+              <span className="font-extrabold text-slate-900 text-sm">
+                Total: ₹{totalDetectedAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
               </span>
-              <button
-                type="button"
-                onClick={onSaveAll}
-                disabled={readyCount === 0 || isBatchSaving}
-                className="inline-flex items-center px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed shadow-xs transition-colors cursor-pointer"
-              >
-                {isBatchSaving ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <CheckCheck className="w-3.5 h-3.5 mr-1" />
-                    Save All ({readyCount})
-                  </>
-                )}
-              </button>
+              {readyCount > 0 && (
+                <button
+                  type="button"
+                  onClick={onSaveAll}
+                  disabled={isBatchSaving}
+                  className="inline-flex items-center px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed shadow-xs transition-colors cursor-pointer"
+                >
+                  {isBatchSaving ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCheck className="w-3.5 h-3.5 mr-1" />
+                      Save All Ready ({readyCount})
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -660,17 +664,21 @@ export const BatchReceiptScannerTable = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col border border-slate-200">
             {/* Modal Header */}
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
               <div className="flex items-center space-x-2">
-                <Eye className="w-4 h-4 text-indigo-600" />
-                <h3 className="font-bold text-sm text-slate-900 truncate max-w-md">
-                  Receipt Preview: {lightboxItem.merchant || lightboxItem.fileName || 'Screenshot'}
+                <h3 className="text-sm font-bold text-slate-900">
+                  {lightboxItem.fileName || 'Original Screenshot'}
                 </h3>
+                {lightboxItem.totalFromImage > 1 && (
+                  <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                    Transaction {lightboxItem.itemIndex} of {lightboxItem.totalFromImage}
+                  </span>
+                )}
               </div>
               <button
                 type="button"
                 onClick={() => setLightboxItem(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -686,38 +694,56 @@ export const BatchReceiptScannerTable = ({
                 />
               </div>
 
-              {/* Data Card beside image */}
+              {/* Data Summary Card beside image */}
               <div className="flex-1 w-full space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
                 <h4 className="font-bold text-slate-800 text-sm border-b border-slate-200 pb-2">
-                  Extracted Receipt Details
+                  Transaction Details
                 </h4>
                 <div className="space-y-2">
                   <div>
-                    <span className="text-slate-500 font-medium block">Merchant:</span>
-                    <span className="text-sm font-bold text-slate-900">{lightboxItem.merchant || '—'}</span>
+                    <span className="text-slate-500 font-medium block">Merchant / Payee:</span>
+                    <span className="text-sm font-bold text-slate-900">
+                      {lightboxItem.merchant || '—'}
+                    </span>
                   </div>
                   <div>
                     <span className="text-slate-500 font-medium block">Amount:</span>
                     <span className="text-base font-extrabold text-emerald-600">
-                      ₹{parseFloat(lightboxItem.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      ₹{parseFloat(lightboxItem.amount || 0).toLocaleString('en-IN', {
+                        minimumFractionDigits: 2,
+                      })}
                     </span>
                   </div>
                   <div>
                     <span className="text-slate-500 font-medium block">Category:</span>
-                    <span className={`inline-block px-2 py-0.5 rounded font-semibold ${CATEGORY_COLORS[lightboxItem.category] || 'bg-slate-200'}`}>
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded font-semibold ${
+                        CATEGORY_COLORS[lightboxItem.category] || 'bg-slate-200'
+                      }`}
+                    >
                       {lightboxItem.category || 'Food & Dining'}
                     </span>
                   </div>
                   <div>
                     <span className="text-slate-500 font-medium block">Date:</span>
-                    <span className="text-slate-800 font-medium">{lightboxItem.expense_date || '—'}</span>
+                    <span className="text-slate-800 font-medium">
+                      {lightboxItem.expense_date || '—'}
+                    </span>
                   </div>
                   <div>
                     <span className="text-slate-500 font-medium block">Notes:</span>
                     <span className="text-slate-700">{lightboxItem.notes || 'None'}</span>
                   </div>
+                  {lightboxItem.reference_id && (
+                    <div>
+                      <span className="text-slate-500 font-medium block">Reference ID:</span>
+                      <span className="text-slate-700 font-mono text-[11px]">
+                        {lightboxItem.reference_id}
+                      </span>
+                    </div>
+                  )}
                   <div>
-                    <span className="text-slate-500 font-medium block">Status:</span>
+                    <span className="text-slate-500 font-medium block">Review Status:</span>
                     <span className="font-bold uppercase tracking-wider text-[10px] text-indigo-700">
                       {lightboxItem.saved ? 'Saved ✓' : lightboxItem.status}
                     </span>
