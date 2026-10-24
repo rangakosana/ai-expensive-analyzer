@@ -3,6 +3,7 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
   timeout: 15000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -20,18 +21,90 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: Handle 401 unauthorized gracefully
+// Response interceptor: Handle 401 with concurrency-safe silent refresh
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      const currentPath = window.location.pathname;
-      if (currentPath !== '/login' && currentPath !== '/register' && currentPath !== '/') {
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Only intercept 401 errors on requests that have not been retried yet
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      const url = originalRequest.url || '';
+
+      // Skip refresh attempt on auth endpoints (login, register, refresh, logout)
+      if (
+        url.includes('/auth/login') ||
+        url.includes('/auth/register') ||
+        url.includes('/auth/refresh') ||
+        url.includes('/auth/logout')
+      ) {
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        // Queue concurrent requests while a refresh is in-flight
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((newToken) => {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const refreshResponse = await api.post('/auth/refresh');
+        const newToken = refreshResponse.data.token;
+
+        localStorage.setItem('token', newToken);
+        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+        processQueue(null, newToken);
+
+        return api(originalRequest);
+      } catch (refreshErr) {
+        processQueue(refreshErr, null);
+
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+
+        const currentPath = window.location.pathname;
+        const isPublicPath =
+          currentPath === '/login' ||
+          currentPath === '/register' ||
+          currentPath === '/' ||
+          currentPath === '/welcome' ||
+          currentPath === '/landing';
+
+        if (!isPublicPath) {
+          window.location.href = '/login';
+        }
+
+        return Promise.reject(refreshErr);
+      } finally {
+        isRefreshing = false;
       }
     }
+
     return Promise.reject(error);
   }
 );
@@ -40,6 +113,8 @@ api.interceptors.response.use(
 export const authService = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
+  refreshToken: () => api.post('/auth/refresh'),
+  logout: () => api.post('/auth/logout'),
   getMe: () => api.get('/auth/me'),
 };
 

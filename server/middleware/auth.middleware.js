@@ -1,6 +1,20 @@
 import jwt from 'jsonwebtoken';
 import { query } from '../config/db.js';
 
+export const getJwtSecret = () => {
+  if (process.env.NODE_ENV === 'production') {
+    if (
+      !process.env.JWT_SECRET ||
+      process.env.JWT_SECRET.trim() === '' ||
+      process.env.JWT_SECRET === 'fallback_secret_for_development_only'
+    ) {
+      throw new Error('FATAL: JWT_SECRET environment variable is missing or insecure in production environment.');
+    }
+    return process.env.JWT_SECRET;
+  }
+  return process.env.JWT_SECRET || 'fallback_secret_for_development_only';
+};
+
 export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
@@ -9,7 +23,7 @@ export const authenticateToken = (req, res, next) => {
     return res.status(401).json({ error: 'Access denied. No authentication token provided.' });
   }
 
-  const jwtSecret = process.env.JWT_SECRET || 'fallback_secret_for_development_only';
+  const jwtSecret = getJwtSecret();
 
   jwt.verify(token, jwtSecret, (err, decoded) => {
     if (err) {

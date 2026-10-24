@@ -12,6 +12,7 @@ import healthRoutes from './routes/health.routes.js';
 import budgetRoutes from './routes/budget.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
+import { getJwtSecret } from './middleware/auth.middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,14 +21,86 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '.env') });
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
+// Verify critical environment variables fail safely at startup in production
+export const verifyEnvironment = () => {
+  if (process.env.NODE_ENV === 'production') {
+    getJwtSecret();
+  }
+};
+verifyEnvironment();
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware
+// Trust Vercel and reverse proxy headers for secure cookies and protocol inspection
+app.set('trust proxy', 1);
+
+// CORS Security Configuration
+const defaultAllowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5001',
+  'http://localhost:5000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5001',
+  'https://ai-expensive-analyzer.vercel.app',
+];
+
+export const getAllowedOrigins = () => {
+  const origins = new Set(defaultAllowedOrigins);
+  if (process.env.CORS_ORIGIN && process.env.CORS_ORIGIN !== '*') {
+    process.env.CORS_ORIGIN.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .forEach((origin) => {
+        if (origin !== '*') {
+          origins.add(origin);
+        }
+      });
+  }
+  return origins;
+};
+
+export const corsOriginValidator = (origin, callback) => {
+  // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+  if (!origin) return callback(null, true);
+
+  const allowed = getAllowedOrigins();
+  if (allowed.has(origin)) {
+    return callback(null, origin);
+  }
+
+  // Reject unapproved origins:
+  // - Never reflect arbitrary origins when credentials are enabled or when CORS_ORIGIN is '*'
+  // - Blanket wildcard .endsWith('.vercel.app') is strictly forbidden
+  return callback(null, false);
+};
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: corsOriginValidator,
   credentials: true,
 }));
+
+// Native Cookie Parser Middleware with URI-decoding resilience and quote stripping
+app.use((req, res, next) => {
+  req.cookies = {};
+  const cookieHeader = req.headers.cookie;
+  if (cookieHeader) {
+    const pairs = cookieHeader.split(';');
+    for (const pair of pairs) {
+      const idx = pair.indexOf('=');
+      if (idx !== -1) {
+        const key = pair.slice(0, idx).trim();
+        const rawVal = pair.slice(idx + 1).trim().replace(/^"|"$/g, '');
+        try {
+          req.cookies[key] = decodeURIComponent(rawVal);
+        } catch {
+          req.cookies[key] = rawVal;
+        }
+      }
+    }
+  }
+  next();
+});
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

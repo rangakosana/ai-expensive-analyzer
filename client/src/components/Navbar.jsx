@@ -23,25 +23,23 @@ export const Navbar = () => {
   const { info } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     info('You have been logged out.');
     navigate('/login');
     setMobileMenuOpen(false);
   };
 
   const navLinkClass = ({ isActive }) =>
-    `inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-      isActive
-        ? 'bg-indigo-50 text-indigo-700 font-semibold'
-        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+    `inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${isActive
+      ? 'bg-indigo-50 text-indigo-700 font-semibold'
+      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
     }`;
 
   const mobileNavLinkClass = ({ isActive }) =>
-    `flex items-center px-4 py-2.5 text-base font-medium rounded-lg transition-colors ${
-      isActive
-        ? 'bg-indigo-50 text-indigo-700 font-semibold'
-        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+    `flex items-center px-4 py-2.5 text-base font-medium rounded-lg transition-colors ${isActive
+      ? 'bg-indigo-50 text-indigo-700 font-semibold'
+      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
     }`;
 
   return (
@@ -220,6 +218,14 @@ export const Navbar = () => {
               >
                 <Receipt className="w-5 h-5 mr-3" />
                 Expenses
+              </NavLink>
+              <NavLink
+                to="/expenses/new"
+                onClick={() => setMobileMenuOpen(false)}
+                className={mobileNavLinkClass}
+              >
+                <Sparkles className="w-5 h-5 mr-3 text-indigo-600" />
+                AI Scanner
               </NavLink>
               <NavLink
                 to="/insights"

@@ -18,6 +18,7 @@ export class MockDatabase {
     this.expenses = [];
     this.ai_insights = [];
     this.budgets = [];
+    this.refresh_tokens = [];
   }
 
   init() {
@@ -77,6 +78,7 @@ export class MockDatabase {
       name: 'Demo User',
       email: 'demo@example.com',
       password_hash: passwordHash,
+      role: 'user',
       created_at: new Date().toISOString(),
     });
     // Fresh zero-state: no fake expenses or pre-seeded budgets
@@ -103,32 +105,98 @@ export class MockDatabase {
     // 2. Insert user
     if (sql.startsWith('INSERT INTO users')) {
       const id = crypto.randomUUID();
-      const [name, email, password_hash] = params;
+      const [name, email, password_hash, role] = params;
       const user = {
         id,
         name,
         email,
         password_hash,
+        role: role || 'user',
         created_at: new Date().toISOString(),
       };
       this.users.push(user);
       this.saveToDisk();
-      return { rows: [{ id: user.id, name: user.name, email: user.email, created_at: user.created_at }], rowCount: 1 };
+      return {
+        rows: [{ id: user.id, name: user.name, email: user.email, role: user.role, created_at: user.created_at }],
+        rowCount: 1,
+      };
     }
 
     // 3. Select user by email for login
     if (sql.startsWith('SELECT') && sql.includes('FROM users WHERE email = $1')) {
       const user = this.users.find((u) => u.email.toLowerCase() === params[0].toLowerCase());
-      return { rows: user ? [{ ...user }] : [], rowCount: user ? 1 : 0 };
+      return { rows: user ? [{ ...user, role: user.role || 'user' }] : [], rowCount: user ? 1 : 0 };
     }
 
     // 4. Select user by id for getMe
     if (sql.startsWith('SELECT') && sql.includes('FROM users WHERE id = $1')) {
       const user = this.users.find((u) => u.id === params[0]);
       return {
-        rows: user ? [{ id: user.id, name: user.name, email: user.email, created_at: user.created_at }] : [],
+        rows: user
+          ? [{ id: user.id, name: user.name, email: user.email, role: user.role || 'user', created_at: user.created_at }]
+          : [],
         rowCount: user ? 1 : 0,
       };
+    }
+
+    // --- REFRESH TOKENS QUERIES ---
+    if (sql.startsWith('INSERT INTO refresh_tokens')) {
+      const [id, user_id, token_hash, expires_at] = params;
+      const record = {
+        id: id || crypto.randomUUID(),
+        user_id,
+        token_hash,
+        expires_at,
+        created_at: new Date().toISOString(),
+        revoked_at: null,
+        replaced_by_token_hash: null,
+      };
+      this.refresh_tokens.push(record);
+      return { rows: [record], rowCount: 1 };
+    }
+
+    if (sql.startsWith('SELECT') && sql.includes('FROM refresh_tokens WHERE token_hash = $1')) {
+      const record = this.refresh_tokens.find((t) => t.token_hash === params[0]);
+      return { rows: record ? [{ ...record }] : [], rowCount: record ? 1 : 0 };
+    }
+
+    if (sql.includes('UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE user_id = $1 AND revoked_at IS NULL')) {
+      let count = 0;
+      for (const t of this.refresh_tokens) {
+        if (t.user_id === params[0] && !t.revoked_at) {
+          t.revoked_at = new Date().toISOString();
+          count++;
+        }
+      }
+      return { rows: [], rowCount: count };
+    }
+
+    if (sql.includes('UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP, replaced_by_token_hash = $1 WHERE id = $2')) {
+      const record = this.refresh_tokens.find((t) => t.id === params[1]);
+      if (record) {
+        record.revoked_at = new Date().toISOString();
+        record.replaced_by_token_hash = params[0];
+        return { rows: [record], rowCount: 1 };
+      }
+      return { rows: [], rowCount: 0 };
+    }
+
+    if (sql.includes('UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE token_hash = $1')) {
+      const record = this.refresh_tokens.find((t) => t.token_hash === params[0]);
+      if (record) {
+        record.revoked_at = new Date().toISOString();
+        return { rows: [record], rowCount: 1 };
+      }
+      return { rows: [], rowCount: 0 };
+    }
+
+    if (sql.includes('UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE id = $1')) {
+      const record = this.refresh_tokens.find((t) => t.id === params[0]);
+      if (record) {
+        record.revoked_at = new Date().toISOString();
+        return { rows: [record], rowCount: 1 };
+      }
+      return { rows: [], rowCount: 0 };
     }
 
     // 5. Insert expense
