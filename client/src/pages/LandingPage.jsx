@@ -19,6 +19,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { Logo } from '../components/Logo.jsx';
 
 export const LandingPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -47,9 +48,7 @@ export const LandingPage = () => {
               to={isAuthenticated ? '/dashboard' : '/'}
               className="flex items-center space-x-2.5 group"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-100 group-hover:scale-105 transition-transform">
-                <TrendingUp className="w-5 h-5" />
-              </div>
+              <Logo size="md" className="group-hover:scale-105 transition-transform shadow-md shadow-indigo-100" />
               <div className="flex items-center">
                 <span className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
                   AI Expense
@@ -573,10 +572,8 @@ export const LandingPage = () => {
       <footer className="bg-slate-50 border-t border-slate-200 py-10 mt-auto text-xs sm:text-sm text-slate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-                <TrendingUp className="w-3.5 h-3.5" />
-              </div>
+            <div className="flex items-center space-x-2.5">
+              <Logo size="xs" />
               <span className="font-bold text-slate-800">AI Expense Analyzer</span>
               <span className="text-slate-400">• Intelligent Personal Finance</span>
             </div>

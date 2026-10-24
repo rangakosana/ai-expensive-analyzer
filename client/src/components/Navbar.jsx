@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
-  TrendingUp,
   LayoutDashboard,
   Calendar,
   Receipt,
@@ -16,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from './Toast.jsx';
+import { Logo } from './Logo.jsx';
 
 export const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -48,10 +48,8 @@ export const Navbar = () => {
         <div className="flex justify-between h-16">
           {/* Logo & Brand */}
           <div className="flex items-center">
-            <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex items-center space-x-2.5">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white shadow-md shadow-indigo-100">
-                <TrendingUp className="w-5 h-5" />
-              </div>
+            <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex items-center space-x-2.5 group">
+              <Logo size="md" className="shadow-md shadow-indigo-100 group-hover:scale-105 transition-transform" />
               <div>
                 <span className="text-lg font-bold text-slate-900 tracking-tight">AI Expense</span>
                 <span className="text-lg font-semibold text-indigo-600"> Analyzer</span>

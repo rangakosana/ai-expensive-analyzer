@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { TrendingUp, Lock, Mail, ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../components/Toast.jsx';
+import { Logo } from '../components/Logo.jsx';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -47,8 +48,8 @@ export const LoginPage = () => {
       <div className="max-w-md w-full">
         {/* Brand Card Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-indigo-600 items-center justify-center text-white shadow-lg shadow-indigo-200 mb-2.5 sm:mb-3">
-            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
+          <div className="inline-block mb-2.5 sm:mb-3">
+            <Logo size="lg" className="shadow-lg shadow-indigo-200/50" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             Sign in to your account
