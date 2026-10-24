@@ -1,5 +1,17 @@
-import app from '../../server/server.js';
+let appInstance = null;
 
-export default function handler(req, res) {
-  return app(req, res);
+export default async function handler(req, res) {
+  try {
+    if (!appInstance) {
+      const serverMod = await import('../../server/server.js');
+      appInstance = serverMod.default;
+    }
+    return appInstance(req, res);
+  } catch (err) {
+    console.error('Serverless Invocation Error:', err);
+    return res.status(500).json({
+      error: err.message,
+      stack: err.stack,
+    });
+  }
 }
