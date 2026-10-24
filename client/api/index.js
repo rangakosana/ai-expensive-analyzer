@@ -1,17 +1,15 @@
-let appInstance = null;
+import 'express';
+import 'pg';
+import 'bcryptjs';
+import 'jsonwebtoken';
+import 'cors';
+import 'zod';
+import 'dotenv';
+import 'morgan';
+import '@google/genai';
 
-export default async function handler(req, res) {
-  try {
-    if (!appInstance) {
-      const serverMod = await import('../../server/server.js');
-      appInstance = serverMod.default;
-    }
-    return appInstance(req, res);
-  } catch (err) {
-    console.error('Serverless Invocation Error:', err);
-    return res.status(500).json({
-      error: err.message,
-      stack: err.stack,
-    });
-  }
+import app from '../../server/server.js';
+
+export default function handler(req, res) {
+  return app(req, res);
 }
